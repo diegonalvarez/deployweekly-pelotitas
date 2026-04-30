@@ -6,8 +6,21 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  /* In dev, allow any localhost / 0.0.0.0 / 127.0.0.1 / LAN-IP origin so devs
+     can hit the app via whichever hostname Next.js prints. In prod, set
+     CORS_ORIGINS as a comma-separated whitelist (or FRONTEND_URL). */
+  const explicitOrigins =
+    process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) ||
+    (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : null);
+
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [process.env.FRONTEND_URL || 'http://localhost:3098'],
+    origin: explicitOrigins ?? ((origin, cb) => {
+      if (!origin) return cb(null, true); // curl, server-to-server
+      if (/^https?:\/\/(localhost|0\.0\.0\.0|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+        return cb(null, true);
+      }
+      return cb(new Error(`Origin ${origin} not allowed by CORS`), false);
+    }),
     credentials: true,
   });
 
