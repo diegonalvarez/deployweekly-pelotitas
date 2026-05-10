@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdatePlayerProfileDto, UpdateUserDto } from './dto/update-profile.dto';
 import { UpdateAvailabilityDto } from './dto/availability.dto';
 import { UpdatePrivacyDto } from './dto/privacy.dto';
+import { BillingService } from '../billing/billing.service';
 import { Sport } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private billing: BillingService,
+  ) {}
 
   async updateUser(userId: string, dto: UpdateUserDto) {
     return this.prisma.user.update({
@@ -31,9 +35,21 @@ export class UsersService {
     });
     if (!profile) throw new NotFoundException('Player profile not found');
 
+    // Stamp currentLocationUpdatedAt whenever any current* field is touched —
+    // helps us age out stale "I'm in Mexico" data after weeks.
+    const touchesCurrent =
+      dto.currentCountry !== undefined ||
+      dto.currentState !== undefined ||
+      dto.currentCity !== undefined ||
+      dto.currentLatitude !== undefined ||
+      dto.currentLongitude !== undefined;
+
     return this.prisma.playerProfile.update({
       where: { userId },
-      data: dto,
+      data: {
+        ...dto,
+        ...(touchesCurrent ? { currentLocationUpdatedAt: new Date() } : {}),
+      },
     });
   }
 
@@ -306,6 +322,13 @@ export class UsersService {
   // ─── PRIVACY ────────────────────────────────────────────
 
   async updatePrivacy(userId: string, dto: UpdatePrivacyDto) {
+    // Privacy controls are part of the Pro plan. Server enforces — UI gate
+    // is just UX, this is the real fence.
+    const entitled = await this.billing.hasActiveEntitlement(userId);
+    if (!entitled) {
+      throw new ForbiddenException('La privacidad requiere una suscripción activa');
+    }
+
     const profile = await this.prisma.playerProfile.findUnique({
       where: { userId },
     });

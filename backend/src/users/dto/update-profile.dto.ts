@@ -8,6 +8,48 @@ export class UpdatePlayerProfileDto {
   @IsString()
   city?: string;
 
+  // ── Home location (origin) ───────────────────────────────────────
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  homeCountry?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  homeState?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  homeCity?: string;
+
+  // ── Current location (where user is right now) ───────────────────
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currentCountry?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currentState?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currentCity?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  currentLatitude?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  currentLongitude?: number;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

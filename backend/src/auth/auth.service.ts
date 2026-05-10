@@ -34,6 +34,30 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
+    // If any location info was provided at register, eagerly create the
+    // PlayerProfile so we don't lose the data — even before /activate is hit.
+    const hasLocation = !!(
+      dto.homeCountry || dto.homeState || dto.homeCity ||
+      dto.currentCountry || dto.currentState || dto.currentCity
+    );
+    const playerProfileCreate = hasLocation
+      ? {
+          create: {
+            homeCountry: dto.homeCountry,
+            homeState: dto.homeState,
+            homeCity: dto.homeCity,
+            // Current defaults to home if not given.
+            currentCountry: dto.currentCountry || dto.homeCountry,
+            currentState:   dto.currentState   || dto.homeState,
+            currentCity:    dto.currentCity    || dto.homeCity,
+            currentLocationUpdatedAt: new Date(),
+            // Legacy fields filled from home for back-compat with old code.
+            city:  dto.homeCity,
+            state: dto.homeState,
+          },
+        }
+      : undefined;
+
     // Register as global user — no roles yet until profile activation
     const user = await this.prisma.user.create({
       data: {
@@ -43,6 +67,7 @@ export class AuthService {
         lastName: dto.lastName,
         phone: dto.phone,
         roles: [], // Empty — user activates profiles later
+        playerProfile: playerProfileCreate,
       },
       select: {
         id: true,
@@ -116,7 +141,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -138,8 +163,32 @@ export class AuthService {
         },
         clubProfiles: { include: { locations: true } },
         organizerProfile: true,
+        subscription: {
+          select: {
+            status: true,
+            plan: true,
+            currentPeriodEnd: true,
+            cancelAtPeriodEnd: true,
+          },
+        },
       },
     });
+    if (!user) return null;
+
+    // Compute simple `isActive` flag for the client. Mirrors BillingService.isEntitled.
+    const sub = user.subscription;
+    const now = Date.now();
+    const isActive =
+      !!sub &&
+      (sub.status === 'ACTIVE' || sub.status === 'TRIALING') &&
+      (!sub.currentPeriodEnd || sub.currentPeriodEnd.getTime() > now);
+
+    return {
+      ...user,
+      subscription: sub
+        ? { ...sub, isActive }
+        : { status: 'INACTIVE', plan: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, isActive: false },
+    };
   }
 
   // ─── PROFILE ACTIVATION ──────────────────────────────

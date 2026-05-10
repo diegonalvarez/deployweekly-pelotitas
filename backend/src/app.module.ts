@@ -16,6 +16,9 @@ import { ConnectionsModule } from './connections/connections.module';
 import { AdminModule } from './admin/admin.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { FeedModule } from './feed/feed.module';
+import { BillingModule } from './billing/billing.module';
+import { MatchLogModule } from './match-log/match-log.module';
+import { ScoreboardModule } from './scoreboard/scoreboard.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { FeedModule } from './feed/feed.module';
     AdminModule,
     AchievementsModule,
     FeedModule,
+    BillingModule,
+    MatchLogModule,
+    ScoreboardModule,
   ],
   providers: [
     {

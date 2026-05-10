@@ -59,8 +59,8 @@ enum CourtStatus {
 }
 
 enum ReservationAccessMode {
-  OPEN            // Any verified user can reserve
-  CONNECTED_ONLY  // Only connected/friend users can reserve
+  OPEN // Any verified user can reserve
+  CONNECTED_ONLY // Only connected/friend users can reserve
 }
 
 enum CoachClubStatus {
@@ -118,9 +118,9 @@ enum BracketRound {
 }
 
 enum ConnectionType {
-  PLAYER_CLUB        // Player wants to reserve at club
-  PLAYER_COACH       // Player wants classes with coach
-  ORGANIZER_CLUB     // Organizer wants to run tournaments at club
+  PLAYER_CLUB // Player wants to reserve at club
+  PLAYER_COACH // Player wants classes with coach
+  ORGANIZER_CLUB // Organizer wants to run tournaments at club
 }
 
 enum ConnectionStatus {
@@ -191,64 +191,109 @@ enum NotificationStatus {
   READ
 }
 
+enum MatchOutcome {
+  WON
+  LOST
+  DRAW
+}
+
+enum MatchLogSide {
+  PARTNER // mi compañero / mi equipo
+  OPPONENT // rival
+}
+
+enum ScoringMode {
+  STANDARD // 0/15/30/40 with deuce + advantage
+  GOLDEN_POINT // sudden death at deuce (point of gold)
+}
+
+enum ScoreboardStatus {
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  ABANDONED
+}
+
+enum ScoreboardSide {
+  HOME
+  AWAY
+}
+
+// Mirrors Stripe subscription statuses we care about. Anything else is mapped to INACTIVE.
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+  INACTIVE
+}
+
 // ─── USERS & AUTH ───────────────────────────────────────
 
 model User {
-  id              String         @id @default(cuid())
-  email           String         @unique
-  passwordHash    String?        // Null when using Google OAuth only
+  id              String       @id @default(cuid())
+  email           String       @unique
+  passwordHash    String? // Null when using Google OAuth only
   firstName       String
   lastName        String
-  phone           String?        @unique
+  phone           String?      @unique
   avatarUrl       String?
-  roles           UserRole[]     @default([])   // Empty until user activates profiles
-  isActive        Boolean        @default(true)
-  emailVerified   Boolean        @default(false)
-  phoneVerified   Boolean        @default(false)
-  termsAcceptedAt DateTime?      // When user accepted T&C
-  authProvider    AuthProvider   @default(LOCAL)
-  googleId        String?        @unique
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  roles           UserRole[]   @default([]) // Empty until user activates profiles
+  isActive        Boolean      @default(true)
+  emailVerified   Boolean      @default(false)
+  phoneVerified   Boolean      @default(false)
+  termsAcceptedAt DateTime? // When user accepted T&C
+  authProvider    AuthProvider @default(LOCAL)
+  googleId        String?      @unique
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   deletedAt       DateTime?
 
   // Identity verification
-  identityStatus    IdentityStatus @default(NOT_STARTED)
-  identityDocUrl    String?        // Encrypted reference to DNI scan
+  identityStatus     IdentityStatus @default(NOT_STARTED)
+  identityDocUrl     String? // Encrypted reference to DNI scan
   identityVerifiedAt DateTime?
 
   // OTP
-  otpCode           String?
-  otpExpiresAt      DateTime?
+  otpCode      String?
+  otpExpiresAt DateTime?
 
   // Profiles (activated on demand)
-  playerProfile       PlayerProfile?
-  coachProfile        CoachProfile?
-  clubProfiles        ClubProfile[]
-  organizerProfile    OrganizerProfile?
+  playerProfile    PlayerProfile?
+  coachProfile     CoachProfile?
+  clubProfiles     ClubProfile[]
+  organizerProfile OrganizerProfile?
+  subscription     Subscription?
 
   // Relations
-  reservations         Reservation[]
-  coachBookings        CoachBooking[]       @relation("StudentBookings")
-  matchParticipants    MatchParticipant[]
-  tournamentPlayers    TournamentTeamPlayer[]
-  notifications        Notification[]
-  createdMatches       Match[]
-  createdTournaments   Tournament[]
-  auditLogs            AuditLog[]
-  sentConnections      Connection[]         @relation("ConnectionFrom")
-  receivedConnections  Connection[]         @relation("ConnectionTo")
-  sentChallenges       Challenge[]          @relation("ChallengerUser")
-  receivedChallenges   Challenge[]          @relation("ChallengedUser")
-  coachReviewsWritten  CoachStudentReview[] @relation("ReviewAuthor")
-  coachReviewsReceived CoachStudentReview[] @relation("ReviewSubject")
-  passwordResetTokens    PasswordResetToken[]
+  reservations            Reservation[]
+  coachBookings           CoachBooking[]           @relation("StudentBookings")
+  matchParticipants       MatchParticipant[]
+  tournamentPlayers       TournamentTeamPlayer[]
+  notifications           Notification[]
+  createdMatches          Match[]
+  createdTournaments      Tournament[]
+  auditLogs               AuditLog[]
+  sentConnections         Connection[]             @relation("ConnectionFrom")
+  receivedConnections     Connection[]             @relation("ConnectionTo")
+  sentChallenges          Challenge[]              @relation("ChallengerUser")
+  receivedChallenges      Challenge[]              @relation("ChallengedUser")
+  coachReviewsWritten     CoachStudentReview[]     @relation("ReviewAuthor")
+  coachReviewsReceived    CoachStudentReview[]     @relation("ReviewSubject")
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  recurringReservations  RecurringReservation[]
-  waitlistEntries        Waitlist[]
-  achievements           UserAchievement[]
-  feedItems              ActivityFeedItem[]
-  xpPoints               Int             @default(0)
+  recurringReservations   RecurringReservation[]
+  waitlistEntries         Waitlist[]
+  achievements            UserAchievement[]
+  feedItems               ActivityFeedItem[]
+  xpPoints                Int                      @default(0)
+  matchLogEntries         MatchLogEntry[]          @relation("MatchLogOwner")
+  matchLogParticipations  MatchLogParticipant[]    @relation("MatchLogParticipantUser")
+  scoreboards             Scoreboard[]             @relation("ScoreboardOwner")
+  scoreboardEvents        ScoreboardEvent[]        @relation("ScoreboardEventAuthor")
 
   @@index([email])
   @@index([phone])
@@ -259,49 +304,68 @@ model User {
 // ─── PROFILES ───────────────────────────────────────────
 
 model PlayerProfile {
-  id                String          @id @default(cuid())
-  userId            String          @unique
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  city              String?
-  state             String?
-  bio               String?
-  hand              HandPreference?
-  sports            Sport[]         @default([])
-  padelLevel        Float?          // 1.0 - 10.0
-  tennisLevel       Float?          // 1.0 - 10.0
-  padelCategory     String?         // "4ta", "5ta", "6ta", "7ma", "8va", "Open", etc.
-  tennisCategory    String?
-  preferredPosition String?         // Drive/Revés for padel
-  showPhoneToOrganizers Boolean     @default(false) // Allow organizers to see phone
-  matchesPlayed     Int             @default(0)
-  matchesWon        Int             @default(0)
-  matchesLost       Int             @default(0)
-  setsWon           Int             @default(0)
-  setsLost          Int             @default(0)
-  gamesWon          Int             @default(0)
-  gamesLost         Int             @default(0)
+  id                       String          @id @default(cuid())
+  userId                   String          @unique
+  user                     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Legacy single-location fields (kept for back-compat with existing rows).
+  // New code should write to home* and current* fields below.
+  city                     String?
+  state                    String?
+  // Home — where the player is from
+  homeCountry              String?
+  homeState                String?
+  homeCity                 String?
+  // Current location — where the player is right now (may differ from home).
+  // Used for proximity discovery, "available now", and travelling players.
+  currentCountry           String?
+  currentState             String?
+  currentCity              String?
+  currentLatitude          Float?
+  currentLongitude         Float?
+  currentLocationUpdatedAt DateTime?
+  bio                      String?
+  hand                     HandPreference?
+  sports                   Sport[]         @default([])
+  padelLevel               Float? // 1.0 - 10.0
+  tennisLevel              Float? // 1.0 - 10.0
+  padelCategory            String? // "4ta", "5ta", "6ta", "7ma", "8va", "Open", etc.
+  tennisCategory           String?
+  preferredPosition        String? // Drive/Revés for padel
+  showPhoneToOrganizers    Boolean         @default(false) // Allow organizers to see phone
+  matchesPlayed            Int             @default(0)
+  matchesWon               Int             @default(0)
+  matchesLost              Int             @default(0)
+  setsWon                  Int             @default(0)
+  setsLost                 Int             @default(0)
+  gamesWon                 Int             @default(0)
+  gamesLost                Int             @default(0)
 
   // Availability ("Estoy disponible ahora")
-  isAvailableNow    Boolean         @default(false)
-  availableUntil    DateTime?
-  availableSport    Sport?
+  isAvailableNow Boolean   @default(false)
+  availableUntil DateTime?
+  availableSport Sport?
 
   // Privacy controls (all default PUBLIC = true)
-  showStats         Boolean         @default(true)
-  showMatchHistory  Boolean         @default(true)
-  showLevel         Boolean         @default(true)
-  showCity          Boolean         @default(true)
-  showAvailability  Boolean         @default(true)
-  showTournaments   Boolean         @default(true)
+  showStats        Boolean @default(true)
+  showMatchHistory Boolean @default(true)
+  showLevel        Boolean @default(true)
+  showCity         Boolean @default(true)
+  showAvailability Boolean @default(true)
+  showTournaments  Boolean @default(true)
 
   // Ranking (calculated)
-  rankingPoints     Int             @default(0)
-  rankingPosition   Int?
+  rankingPoints   Int  @default(0)
+  rankingPosition Int?
 
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([city])
+  @@index([homeCity])
+  @@index([homeCountry])
+  @@index([currentCity])
+  @@index([currentCountry])
+  @@index([currentLatitude, currentLongitude])
   @@index([padelCategory])
   @@index([tennisCategory])
   @@index([isAvailableNow])
@@ -310,20 +374,20 @@ model PlayerProfile {
 }
 
 model CoachProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio             String?
-  sports          Sport[]  @default([])
-  experience      String?
-  certifications  String?
-  pricePerHour    Float?
-  groupPrice      Float?
-  isPublic        Boolean  @default(true)
-  requireConnection Boolean @default(true) // Only connected players can book
-  autoAcceptAll   Boolean  @default(false) // Auto-accept bookings from all connected
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio               String?
+  sports            Sport[]  @default([])
+  experience        String?
+  certifications    String?
+  pricePerHour      Float?
+  groupPrice        Float?
+  isPublic          Boolean  @default(true)
+  requireConnection Boolean  @default(true) // Only connected players can book
+  autoAcceptAll     Boolean  @default(false) // Auto-accept bookings from all connected
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   clubLinks      CoachClubLink[]
   availabilities CoachAvailability[]
@@ -334,14 +398,43 @@ model CoachProfile {
   @@map("coach_profiles")
 }
 
+// ─── BILLING / SUBSCRIPTIONS ───────────────────────────
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe identifiers — null until first checkout completes
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+  // Plan slug we expose to the client (e.g. "pro_monthly", "pro_annual").
+  plan                 String?
+
+  status             SubscriptionStatus @default(INACTIVE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+  canceledAt         DateTime?
+  trialEnd           DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
 model OrganizerProfile {
   id                   String   @id @default(cuid())
   userId               String   @unique
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bio                  String?
   freeTournamentsUsed  Int      @default(0)
-  freeTournamentsLimit Int      @default(5)  // Can be increased via referrals
-  referralCount        Int      @default(0)  // Users brought to the platform
+  freeTournamentsLimit Int      @default(5) // Can be increased via referrals
+  referralCount        Int      @default(0) // Users brought to the platform
   referralCode         String?  @unique
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -355,13 +448,13 @@ model Connection {
   id          String           @id @default(cuid())
   fromUserId  String
   fromUser    User             @relation("ConnectionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUserId    String           // The target user (club owner, coach, etc.)
+  toUserId    String // The target user (club owner, coach, etc.)
   toUser      User             @relation("ConnectionTo", fields: [toUserId], references: [id], onDelete: Cascade)
   type        ConnectionType
   status      ConnectionStatus @default(PENDING)
   // Context: which entity this connection relates to
-  clubId      String?          // For PLAYER_CLUB and ORGANIZER_CLUB
-  coachId     String?          // For PLAYER_COACH (coachProfile id)
+  clubId      String? // For PLAYER_CLUB and ORGANIZER_CLUB
+  coachId     String? // For PLAYER_COACH (coachProfile id)
   message     String?
   respondedAt DateTime?
   createdAt   DateTime         @default(now())
@@ -378,7 +471,7 @@ model CoachAutoAccept {
   id        String       @id @default(cuid())
   coachId   String
   coach     CoachProfile @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  playerId  String       // userId of the player
+  playerId  String // userId of the player
   createdAt DateTime     @default(now())
 
   @@unique([coachId, playerId])
@@ -387,16 +480,16 @@ model CoachAutoAccept {
 
 // Coach private review of student (admin-visible only)
 model CoachStudentReview {
-  id         String   @id @default(cuid())
-  coachId    String
-  coach      CoachProfile @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  authorId   String
-  author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
-  studentId  String
-  student    User     @relation("ReviewSubject", fields: [studentId], references: [id])
-  comment    String
-  isWarning  Boolean  @default(false) // Flag for problematic student
-  createdAt  DateTime @default(now())
+  id        String       @id @default(cuid())
+  coachId   String
+  coach     CoachProfile @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation("ReviewAuthor", fields: [authorId], references: [id])
+  studentId String
+  student   User         @relation("ReviewSubject", fields: [studentId], references: [id])
+  comment   String
+  isWarning Boolean      @default(false) // Flag for problematic student
+  createdAt DateTime     @default(now())
 
   @@index([studentId])
   @@index([coachId])
@@ -406,31 +499,31 @@ model CoachStudentReview {
 // ─── CLUBS & LOCATIONS ─────────────────────────────────
 
 model ClubProfile {
-  id              String             @id @default(cuid())
+  id              String                @id @default(cuid())
   ownerId         String
-  owner           User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner           User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   name            String
   description     String?
   phone           String?
   email           String?
   website         String?
   logoUrl         String?
-  imageUrl        String?            // Main photo of the club
-  sports          Sport[]            @default([])
-  approvalStatus  ClubApprovalStatus @default(PENDING)
+  imageUrl        String? // Main photo of the club
+  sports          Sport[]               @default([])
+  approvalStatus  ClubApprovalStatus    @default(PENDING)
   approvedAt      DateTime?
   rejectionReason String?
   reservationMode ReservationAccessMode @default(OPEN)
-  paymentMethods  String[]           @default([]) // "cash", "transfer", "mercadopago"
-  isActive        Boolean            @default(true)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  paymentMethods  String[]              @default([]) // "cash", "transfer", "mercadopago"
+  isActive        Boolean               @default(true)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
   deletedAt       DateTime?
 
-  locations    ClubLocation[]
-  courts       Court[]
-  coachLinks   CoachClubLink[]
-  tournaments  Tournament[]
+  locations   ClubLocation[]
+  courts      Court[]
+  coachLinks  CoachClubLink[]
+  tournaments Tournament[]
 
   @@index([ownerId])
   @@index([approvalStatus])
@@ -438,20 +531,20 @@ model ClubProfile {
 }
 
 model ClubLocation {
-  id          String      @id @default(cuid())
-  clubId      String
-  club        ClubProfile @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name        String
-  address     String
-  city        String
-  state       String?
-  country     String      @default("Argentina")
-  latitude    Float?
-  longitude   Float?
-  phone       String?
-  isMain      Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String      @id @default(cuid())
+  clubId    String
+  club      ClubProfile @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  city      String
+  state     String?
+  country   String      @default("Argentina")
+  latitude  Float?
+  longitude Float?
+  phone     String?
+  isMain    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   courts Court[]
 
@@ -464,28 +557,28 @@ model ClubLocation {
 // ─── COURTS ────────────────────────────────────────────
 
 model Court {
-  id            String       @id @default(cuid())
+  id            String        @id @default(cuid())
   clubId        String
-  club          ClubProfile  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club          ClubProfile   @relation(fields: [clubId], references: [id], onDelete: Cascade)
   locationId    String?
   location      ClubLocation? @relation(fields: [locationId], references: [id])
   name          String
   sport         Sport
   surface       CourtSurface
   courtType     CourtType
-  hasLighting   Boolean      @default(false)
-  isActive      Boolean      @default(true)
+  hasLighting   Boolean       @default(false)
+  isActive      Boolean       @default(true)
   pricePerBlock Float?
-  blockDuration Int          @default(60) // minutes
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  blockDuration Int           @default(60) // minutes
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  availabilities    CourtAvailability[]
-  reservations      Reservation[]
-  tournamentMatches TournamentMatch[]
-  matches           Match[]
+  availabilities        CourtAvailability[]
+  reservations          Reservation[]
+  tournamentMatches     TournamentMatch[]
+  matches               Match[]
   recurringReservations RecurringReservation[]
-  waitlistEntries   Waitlist[]
+  waitlistEntries       Waitlist[]
 
   @@index([clubId])
   @@index([sport])
@@ -493,15 +586,15 @@ model Court {
 }
 
 model CourtAvailability {
-  id          String      @id @default(cuid())
-  courtId     String
-  court       Court       @relation(fields: [courtId], references: [id], onDelete: Cascade)
-  dayOfWeek   Int
-  openTime    String
-  closeTime   String
-  status      CourtStatus @default(AVAILABLE)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String      @id @default(cuid())
+  courtId   String
+  court     Court       @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  openTime  String
+  closeTime String
+  status    CourtStatus @default(AVAILABLE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@unique([courtId, dayOfWeek])
   @@map("court_availabilities")
@@ -594,26 +687,27 @@ model CoachBooking {
 // ─── MATCHES & SOCIAL ──────────────────────────────────
 
 model Match {
-  id            String      @id @default(cuid())
-  createdById   String
-  createdBy     User        @relation(fields: [createdById], references: [id])
-  courtId       String?
-  court         Court?      @relation(fields: [courtId], references: [id])
-  sport         Sport
-  date          DateTime    @db.Date
-  startTime     String
-  endTime       String?
-  maxPlayers    Int         @default(4)
-  level         Float?
-  city          String?
-  description   String?
-  isPublic      Boolean     @default(true)
-  status        MatchStatus @default(OPEN)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  createdById String
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  courtId     String?
+  court       Court?      @relation(fields: [courtId], references: [id])
+  sport       Sport
+  date        DateTime    @db.Date
+  startTime   String
+  endTime     String?
+  maxPlayers  Int         @default(4)
+  level       Float?
+  city        String?
+  description String?
+  isPublic    Boolean     @default(true)
+  status      MatchStatus @default(OPEN)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   participants MatchParticipant[]
   results      MatchResult[]
+  logEntries   MatchLogEntry[]
 
   @@index([sport, status])
   @@index([city])
@@ -622,13 +716,13 @@ model Match {
 }
 
 model MatchParticipant {
-  id        String   @id @default(cuid())
-  matchId   String
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  team      Int?
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  matchId  String
+  match    Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  team     Int?
+  joinedAt DateTime @default(now())
 
   @@unique([matchId, userId])
   @@map("match_participants")
@@ -650,19 +744,19 @@ model MatchResult {
 // ─── CHALLENGES ────────────────────────────────────────
 
 model Challenge {
-  id            String   @id @default(cuid())
-  challengerId  String
-  challenger    User     @relation("ChallengerUser", fields: [challengerId], references: [id])
-  challengedId  String
-  challenged    User     @relation("ChallengedUser", fields: [challengedId], references: [id])
-  sport         Sport
-  message       String?
-  proposedDate  DateTime? @db.Date
-  proposedTime  String?
-  status        ConnectionStatus @default(PENDING) // reuse: PENDING/ACCEPTED/REJECTED
-  matchId       String?  // Links to match once accepted and created
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String           @id @default(cuid())
+  challengerId String
+  challenger   User             @relation("ChallengerUser", fields: [challengerId], references: [id])
+  challengedId String
+  challenged   User             @relation("ChallengedUser", fields: [challengedId], references: [id])
+  sport        Sport
+  message      String?
+  proposedDate DateTime?        @db.Date
+  proposedTime String?
+  status       ConnectionStatus @default(PENDING) // reuse: PENDING/ACCEPTED/REJECTED
+  matchId      String? // Links to match once accepted and created
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([challengedId, status])
   @@index([challengerId])
@@ -672,28 +766,28 @@ model Challenge {
 // ─── TOURNAMENTS ───────────────────────────────────────
 
 model Tournament {
-  id               String           @id @default(cuid())
-  clubId           String
-  club             ClubProfile      @relation(fields: [clubId], references: [id])
-  createdById      String
-  createdBy        User             @relation(fields: [createdById], references: [id])
-  name             String
-  description      String?
-  sport            Sport
-  status           TournamentStatus @default(DRAFT)
-  maxTeams         Int?
-  startDate        DateTime?        @db.Date
-  endDate          DateTime?        @db.Date
-  registrationEnd  DateTime?
-  pointsPerWin     Int              @default(3)
-  pointsPerLoss    Int              @default(0)
-  pointsPerWalkover Int             @default(1)
-  tiebreakers      String[]         @default(["POINTS", "SET_DIFF", "GAME_DIFF", "HEAD_TO_HEAD"])
-  rules            String?
-  isFree           Boolean          @default(true)
-  isBillable       Boolean          @default(false) // Should we charge for this one?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id                String           @id @default(cuid())
+  clubId            String
+  club              ClubProfile      @relation(fields: [clubId], references: [id])
+  createdById       String
+  createdBy         User             @relation(fields: [createdById], references: [id])
+  name              String
+  description       String?
+  sport             Sport
+  status            TournamentStatus @default(DRAFT)
+  maxTeams          Int?
+  startDate         DateTime?        @db.Date
+  endDate           DateTime?        @db.Date
+  registrationEnd   DateTime?
+  pointsPerWin      Int              @default(3)
+  pointsPerLoss     Int              @default(0)
+  pointsPerWalkover Int              @default(1)
+  tiebreakers       String[]         @default(["POINTS", "SET_DIFF", "GAME_DIFF", "HEAD_TO_HEAD"])
+  rules             String?
+  isFree            Boolean          @default(true)
+  isBillable        Boolean          @default(false) // Should we charge for this one?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   categories TournamentCategory[]
   teams      TournamentTeam[]
@@ -737,12 +831,12 @@ model TournamentTeam {
 
   players      TournamentTeamPlayer[]
   groupMembers TournamentGroupMember[]
-  homeMatches  TournamentMatch[]   @relation("HomeTeam")
-  awayMatches  TournamentMatch[]   @relation("AwayTeam")
-  wonMatches   TournamentMatch[]   @relation("WinnerTeam")
-  homeBrackets TournamentBracket[] @relation("BracketHome")
-  awayBrackets TournamentBracket[] @relation("BracketAway")
-  wonBrackets  TournamentBracket[] @relation("BracketWinner")
+  homeMatches  TournamentMatch[]       @relation("HomeTeam")
+  awayMatches  TournamentMatch[]       @relation("AwayTeam")
+  wonMatches   TournamentMatch[]       @relation("WinnerTeam")
+  homeBrackets TournamentBracket[]     @relation("BracketHome")
+  awayBrackets TournamentBracket[]     @relation("BracketAway")
+  wonBrackets  TournamentBracket[]     @relation("BracketWinner")
 
   @@index([tournamentId])
   @@map("tournament_teams")
@@ -826,7 +920,9 @@ model TournamentMatch {
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 
-  sets TournamentMatchSet[]
+  sets        TournamentMatchSet[]
+  logEntries  MatchLogEntry[]
+  scoreboards Scoreboard[]
 
   @@index([tournamentId])
   @@index([groupId])
@@ -894,20 +990,20 @@ model Notification {
 }
 
 model WhatsAppNotificationLog {
-  id             String             @id @default(cuid())
-  notificationId String             @unique
-  notification   Notification       @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  id             String              @id @default(cuid())
+  notificationId String              @unique
+  notification   Notification        @relation(fields: [notificationId], references: [id], onDelete: Cascade)
   channel        NotificationChannel @default(WHATSAPP)
   templateName   String?
   templateParams Json?
   phoneNumber    String?
-  status         NotificationStatus @default(PENDING)
+  status         NotificationStatus  @default(PENDING)
   externalId     String?
   errorMessage   String?
   sentAt         DateTime?
   deliveredAt    DateTime?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@index([status])
   @@map("whatsapp_notification_logs")
@@ -916,13 +1012,13 @@ model WhatsAppNotificationLog {
 // ─── SECURITY TOKENS ──────────────────────────────
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([token])
   @@index([userId])
@@ -930,13 +1026,13 @@ model PasswordResetToken {
 }
 
 model EmailVerificationToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([token])
   @@map("email_verification_tokens")
@@ -945,20 +1041,20 @@ model EmailVerificationToken {
 // ─── RECURRING RESERVATIONS & WAITLIST ─────────────────
 
 model RecurringReservation {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courtId     String
-  court       Court    @relation(fields: [courtId], references: [id])
-  dayOfWeek   Int      // 0-6
-  startTime   String
-  endTime     String
-  sport       Sport
-  startDate   DateTime @db.Date
-  endDate     DateTime? @db.Date
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courtId   String
+  court     Court     @relation(fields: [courtId], references: [id])
+  dayOfWeek Int // 0-6
+  startTime String
+  endTime   String
+  sport     Sport
+  startDate DateTime  @db.Date
+  endDate   DateTime? @db.Date
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([userId])
   @@index([courtId, dayOfWeek])
@@ -1016,15 +1112,16 @@ model AuditLog {
 
 model Achievement {
   id          String   @id @default(cuid())
-  key         String   @unique  // "first_reservation", "10_matches", "tournament_champion", etc.
+  key         String   @unique // "first_reservation", "10_matches", "tournament_champion", etc.
   name        String
   description String
-  iconEmoji   String   // Emoji as icon
+  iconEmoji   String // Emoji as icon
   xpReward    Int      @default(10)
   category    String   @default("general") // "social", "tournament", "training", "milestone"
   createdAt   DateTime @default(now())
 
   userAchievements UserAchievement[]
+
   @@map("achievements")
 }
 
@@ -1045,7 +1142,7 @@ model ActivityFeedItem {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // "match_result", "tournament_win", "new_club", "achievement", "reservation"
+  type      String // "match_result", "tournament_win", "new_club", "achievement", "reservation"
   title     String
   content   String?
   metadata  Json?
@@ -1055,4 +1152,169 @@ model ActivityFeedItem {
   @@index([createdAt])
   @@index([userId])
   @@map("activity_feed")
+}
+
+// ─── MATCH LOG (Personal player journal) ────────────────────────────────
+//
+// Each player can keep their own private journal of matches.
+// Three flavours, all stored in this single table:
+//   1) Standalone — the match was played off-platform (organiser doesn't use
+//      pelotitas). Owner records score + opponents (registered or by name) +
+//      notes. Score lives directly on the entry.
+//   2) Linked to a pickup Match — owner adds private notes/score on a Match
+//      that exists in the platform.
+//   3) Linked to a TournamentMatch — owner adds private notes only. Score
+//      fields are ignored; the truth lives in TournamentMatchSet (set by org).
+//
+// Phantom opponents (not on pelotitas yet): stored on MatchLogParticipant by
+// firstName + lastName. When that person registers and claims the records,
+// userId gets backfilled.
+
+model MatchLogEntry {
+  id      String @id @default(cuid())
+  ownerId String
+  owner   User   @relation("MatchLogOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // ─── Optional linkage (at most one of these) ───
+  matchId           String?
+  match             Match?           @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  tournamentMatchId String?
+  tournamentMatch   TournamentMatch? @relation(fields: [tournamentMatchId], references: [id], onDelete: SetNull)
+
+  // ─── Standalone fields (used when no link) ───
+  sport     Sport
+  date      DateTime @db.Date
+  startTime String? // "HH:MM"
+  city      String?
+  venue     String? // freeform: "Club Almagro", etc.
+
+  // ─── Score (writable when not linked to a TournamentMatch) ───
+  myScore       String? // freeform "6-4 6-3" or structured later
+  opponentScore String?
+  result        MatchOutcome?
+
+  // ─── Private notes ───
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants MatchLogParticipant[]
+
+  @@index([ownerId, date])
+  @@index([matchId])
+  @@index([tournamentMatchId])
+  @@map("match_log_entries")
+}
+
+// ─── SCOREBOARD (Live point-by-point scorer) ───────────────────────────
+//
+// Two flavours, same model:
+//   1) Official — owned by an organiser, tied to a TournamentMatch. Becomes
+//      the source of truth for the tournament's TournamentMatchSet rows.
+//   2) Personal — any user can score their own match. May "mirror" an
+//      official scoreboard so the user can compare/copy values into their
+//      own private tracker.
+//
+// Every point/setting change is logged as a ScoreboardEvent for full audit.
+
+model Scoreboard {
+  id      String @id @default(cuid())
+  ownerId String
+  owner   User   @relation("ScoreboardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // ─── Linkage (mutually exclusive when isOfficial = true) ───
+  tournamentMatchId String?
+  tournamentMatch   TournamentMatch? @relation(fields: [tournamentMatchId], references: [id], onDelete: SetNull)
+
+  // Personal scoreboards may mirror an official one so the user can copy state.
+  mirrorsScoreboardId String?
+  mirrorsScoreboard   Scoreboard?  @relation("ScoreboardMirror", fields: [mirrorsScoreboardId], references: [id], onDelete: SetNull)
+  mirroredBy          Scoreboard[] @relation("ScoreboardMirror")
+
+  // ─── Identity ───
+  isOfficial Boolean @default(false)
+  sport      Sport
+  homeLabel  String // "Diego / Juan" or single name
+  awayLabel  String
+
+  // ─── Settings (mutable while in progress) ───
+  scoringMode         ScoringMode @default(STANDARD)
+  totalSets           Int         @default(3) // 3 = bo3, 5 = bo5
+  gamesPerSet         Int         @default(6) // typically 6
+  tieBreakAt          Int         @default(6) // 6-6 → tiebreak
+  superTieBreak       Boolean     @default(false) // last "set" is a super tiebreak (to 10)
+  tieBreakPoints      Int         @default(7)
+  superTieBreakPoints Int         @default(10)
+
+  // ─── Live state ───
+  status          ScoreboardStatus @default(IN_PROGRESS)
+  currentSet      Int              @default(1)
+  homeSetGames    Int[]            @default([]) // games won per set, e.g. [6, 4]
+  awaySetGames    Int[]            @default([])
+  homePoints      Int              @default(0) // 0..3 within a game
+  awayPoints      Int              @default(0)
+  homeAdvantage   Boolean          @default(false)
+  awayAdvantage   Boolean          @default(false)
+  inTieBreak      Boolean          @default(false)
+  inSuperTieBreak Boolean          @default(false)
+  homeTbPoints    Int              @default(0)
+  awayTbPoints    Int              @default(0)
+  servingSide     ScoreboardSide   @default(HOME)
+  winner          ScoreboardSide?
+  finishedAt      DateTime?
+
+  // ─── Personal notes attached to this scoreboard ───
+  notes String?
+
+  events ScoreboardEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ownerId, tournamentMatchId])
+  @@index([ownerId])
+  @@index([tournamentMatchId])
+  @@index([status])
+  @@map("scoreboards")
+}
+
+model ScoreboardEvent {
+  id           String     @id @default(cuid())
+  scoreboardId String
+  scoreboard   Scoreboard @relation(fields: [scoreboardId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User       @relation("ScoreboardEventAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  // Action taxonomy: POINT_HOME, POINT_AWAY, UNDO, GAME_HOME, GAME_AWAY,
+  // SET_HOME, SET_AWAY, SETTING_CHANGE, COPY_FROM_OFFICIAL, RESET, COMPLETE.
+  action       String
+  payload      Json? // freeform — settings diff, prior state for undo, etc.
+  createdAt    DateTime   @default(now())
+
+  @@index([scoreboardId, createdAt])
+  @@index([authorId])
+  @@map("scoreboard_events")
+}
+
+model MatchLogParticipant {
+  id      String        @id @default(cuid())
+  entryId String
+  entry   MatchLogEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  // Either a registered user…
+  userId    String?
+  user      User?   @relation("MatchLogParticipantUser", fields: [userId], references: [id], onDelete: SetNull)
+  // …or a phantom — stored as free text and later linkable.
+  firstName String?
+  lastName  String?
+
+  side            MatchLogSide // PARTNER | OPPONENT
+  noteAboutPlayer String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entryId])
+  @@index([userId])
+  @@index([firstName, lastName])
+  @@map("match_log_participants")
 }

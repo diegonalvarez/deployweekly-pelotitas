@@ -28,6 +28,38 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   referralCode?: string;
+
+  // ── Optional home location (origin) ──────────────────────────────
+  @ApiProperty({ required: false, description: 'Country of origin (home)' })
+  @IsOptional()
+  @IsString()
+  homeCountry?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  homeState?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  homeCity?: string;
+
+  // ── Optional current location (where user is right now) ──────────
+  @ApiProperty({ required: false, description: 'Country where user is right now (if travelling)' })
+  @IsOptional()
+  @IsString()
+  currentCountry?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currentState?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currentCity?: string;
 }
 
 export class GoogleAuthDto {

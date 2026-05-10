@@ -66,6 +66,11 @@ export class CreateClubDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @IsString()
+  country?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsNumber()
   latitude?: number;
 

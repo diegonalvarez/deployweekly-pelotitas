@@ -4,7 +4,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true exposes the unparsed Buffer at req.rawBody — required for
+  // Stripe webhook signature verification (see BillingController.webhook).
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   /* In dev, allow any localhost / 0.0.0.0 / 127.0.0.1 / LAN-IP origin so devs
      can hit the app via whichever hostname Next.js prints. In prod, set

@@ -24,12 +24,24 @@ export class ClubsController {
   @Get()
   findAll(
     @Query('city') city?: string,
+    @Query('state') state?: string,
+    @Query('country') country?: string,
     @Query('sport') sport?: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('radiusKm') radiusKm?: string,
+    @Query('sort') sort?: 'recent' | 'nearest',
     @Query('page') page?: string,
   ) {
     return this.clubsService.findAll({
       city,
+      state,
+      country,
       sport,
+      lat: lat ? parseFloat(lat) : undefined,
+      lng: lng ? parseFloat(lng) : undefined,
+      radiusKm: radiusKm ? parseFloat(radiusKm) : undefined,
+      sort,
       page: page ? parseInt(page) : 1,
     });
   }
