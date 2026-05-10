@@ -24,6 +24,7 @@ import {
   ChevronDown,
   Maximize,
   Minimize,
+  Share2,
 } from 'lucide-react';
 
 type Side = 'HOME' | 'AWAY';
@@ -236,6 +237,9 @@ export default function ScoreboardPage() {
                   : <><Copy className="w-3 h-3" /> Copiar oficial</>
                 }
               </button>
+            )}
+            {sb.status === 'COMPLETED' && (
+              <ShareButton sb={sb} />
             )}
             <button
               onClick={() => setCourtMode(true)}
@@ -911,6 +915,48 @@ function NotesCard({
         </div>
       )}
     </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Share button — Web Share API + clipboard fallback.
+   ───────────────────────────────────────────────────────────── */
+function ShareButton({ sb }: { sb: Scoreboard }) {
+  const [copied, setCopied] = useState(false);
+  const onShare = async () => {
+    const url = `${window.location.origin}/m/${sb.id}`;
+    const winLabel = sb.winner === 'HOME' ? sb.homeLabel : sb.awayLabel;
+    const score = (sb.homeSetGames || [])
+      .map((h, i) => `${h}-${sb.awaySetGames[i] ?? 0}`)
+      .join(', ');
+    const shareData = {
+      title: `${winLabel} ganó · ${score}`,
+      text: `${sb.homeLabel} vs ${sb.awayLabel} — ${score}`,
+      url,
+    };
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch {
+      /* user cancelled — fall through to clipboard */
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success('Link copiado');
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error('No se pudo copiar');
+    }
+  };
+
+  return (
+    <button onClick={onShare} className="btn-primary text-xs h-9" aria-label="Compartir">
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+      {copied ? 'Copiado' : 'Compartir'}
+    </button>
   );
 }
 

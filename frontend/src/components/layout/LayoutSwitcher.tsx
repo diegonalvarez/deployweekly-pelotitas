@@ -20,13 +20,25 @@ const MARKETING_PREFIXES = [
   '/verify-email',
 ];
 
+/* Naked = no chrome at all (public share pages, OG-only routes). */
+const NAKED_PREFIXES = [
+  '/m/',      // shareable match card
+  '/h2h/',    // public head-to-head
+];
+
 function isMarketing(pathname: string): boolean {
   if (MARKETING_PATHS.includes(pathname)) return true;
   return MARKETING_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
+function isNaked(pathname: string): boolean {
+  return NAKED_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
 export default function LayoutSwitcher({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  if (isNaked(pathname)) return <>{children}</>;
+
   const marketing = isMarketing(pathname);
 
   if (marketing) {
