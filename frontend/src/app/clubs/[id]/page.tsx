@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { formatDate, formatDateLong } from '@/lib/date';
 import toast from 'react-hot-toast';
 
 type ConnectionStatus = 'none' | 'pending' | 'accepted' | 'rejected' | 'loading';
@@ -294,7 +295,12 @@ export default function ClubDetailPage() {
       toast.error('Debes estar conectado con el club para reservar. Envia una solicitud de conexion primero.');
       return;
     }
-    setReserveDate('');
+    // Auto-fill today's date so slots load immediately — saves a click.
+    // The slot fetch effect (deps: [reserveModal.court, reserveDate]) will
+    // fire and populate availableSlots without further user action.
+    const today = new Date();
+    const todayInput = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    setReserveDate(todayInput);
     setAvailableSlots([]);
     setSelectedSlot(null);
     setReserveModal({ open: true, court });
@@ -499,9 +505,7 @@ export default function ClubDetailPage() {
 
   const todayStr = new Date().toISOString().split('T')[0];
   const selectedDayObj = weekDays.find(d => d.dateStr === selectedDay);
-  const selectedDayLabel = selectedDayObj
-    ? selectedDayObj.date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-    : '';
+  const selectedDayLabel = selectedDayObj ? formatDateLong(selectedDayObj.date) : '';
 
   return (
     <div className="min-h-[calc(100vh-4rem)] relative">
@@ -857,12 +861,8 @@ export default function ClubDetailPage() {
                 <div className="h-px bg-border-dark" />
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-text-muted uppercase tracking-wider">Fecha</span>
-                  <span className="text-sm font-medium text-text-secondary capitalize">
-                    {new Date(quickReserve.date + 'T12:00:00').toLocaleDateString('es-AR', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}
+                  <span className="text-sm font-medium text-text-secondary tabular">
+                    {formatDate(quickReserve.date)}
                   </span>
                 </div>
                 <div className="h-px bg-border-dark" />

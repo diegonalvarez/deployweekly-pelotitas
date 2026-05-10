@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import toast from 'react-hot-toast';
 
 /* ─── Types ────────────────────────────────────────────────── */
@@ -64,9 +65,6 @@ const statusLabel = (s: string) => {
     default: return s;
   }
 };
-
-const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 
 /* ═════════════════════════════════════════════════════════════
    MAIN PAGE

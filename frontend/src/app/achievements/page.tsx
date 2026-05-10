@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import Link from 'next/link';
 
 interface Achievement {
@@ -187,12 +188,8 @@ export default function AchievementsPage() {
                             +{achievement.xpReward} XP
                           </span>
                           {unlocked && userAch && (
-                            <p className="text-text-muted text-2xs mt-1">
-                              {new Date(userAch.unlockedAt).toLocaleDateString('es-AR', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })}
+                            <p className="text-text-muted text-2xs mt-1 tabular">
+                              {formatDate(userAch.unlockedAt)}
                             </p>
                           )}
                         </div>

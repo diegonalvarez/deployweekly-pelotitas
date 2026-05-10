@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { formatDateLong, formatMonthYear, toDateInputString } from '@/lib/date';
 
 interface CalendarEvent {
   id: string;
@@ -39,10 +40,6 @@ function addDays(d: Date, n: number): Date {
   return result;
 }
 
-function formatDate(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
-
 function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
@@ -61,8 +58,8 @@ export default function CalendarPage() {
   today.setHours(0, 0, 0, 0);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const from = formatDate(weekStart);
-  const to = formatDate(addDays(weekStart, 6));
+  const from = toDateInputString(weekStart);
+  const to = toDateInputString(addDays(weekStart, 6));
 
   const loadEvents = () => {
     setLoading(true);
@@ -99,14 +96,10 @@ export default function CalendarPage() {
     });
 
   const monthLabel = (() => {
-    const firstMonth = weekStart.toLocaleDateString('es-AR', { month: 'long' });
     const lastDay = addDays(weekStart, 6);
-    const lastMonth = lastDay.toLocaleDateString('es-AR', { month: 'long' });
-    const year = weekStart.getFullYear();
-    if (firstMonth === lastMonth) {
-      return `${firstMonth.charAt(0).toUpperCase() + firstMonth.slice(1)} ${year}`;
-    }
-    return `${firstMonth.charAt(0).toUpperCase() + firstMonth.slice(1)} - ${lastMonth.charAt(0).toUpperCase() + lastMonth.slice(1)} ${year}`;
+    const first = formatMonthYear(weekStart);
+    const last = formatMonthYear(lastDay);
+    return first === last ? first : `${first.split(' ')[0]} – ${last}`;
   })();
 
   // Auth guard
@@ -312,12 +305,8 @@ export default function CalendarPage() {
                       <svg className="w-4 h-4 text-text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-text-secondary">
-                        {new Date(selectedEvent.date).toLocaleDateString('es-AR', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                        })}
+                      <span className="text-text-secondary tabular">
+                        {formatDateLong(selectedEvent.date)}
                       </span>
                     </div>
 

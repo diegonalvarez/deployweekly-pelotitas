@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import Link from 'next/link';
 import RoleGuard from '@/components/RoleGuard';
 import ActivateRoleBanner from '@/components/ActivateRoleBanner';
@@ -23,6 +24,7 @@ import {
   Target,
   Bell,
   ArrowUpRight,
+  StickyNote,
 } from 'lucide-react';
 
 export default function PlayerDashboardPage() {
@@ -42,6 +44,8 @@ function PlayerDashboard() {
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsTotal, setConnectionsTotal] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+  const [logEntries, setLogEntries] = useState<any[]>([]);
+  const [logTotal, setLogTotal] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -64,8 +68,18 @@ function PlayerDashboard() {
         );
         setTournaments(mine);
       }).catch(() => {});
+      api.get<{ entries: any[]; total: number }>('/match-log?limit=4').then((res) => {
+        setLogEntries(res.entries || []);
+        setLogTotal(res.total || 0);
+      }).catch(() => {});
     }
   }, [user]);
+
+  const logWon  = logEntries.filter((e) => e.result === 'WON').length;
+  const logLost = logEntries.filter((e) => e.result === 'LOST').length;
+  const logWinRate = logEntries.length > 0
+    ? Math.round((logWon / logEntries.length) * 100)
+    : 0;
 
   if (!user) return null;
 
@@ -199,7 +213,7 @@ function PlayerDashboard() {
                           {r.court?.club?.name} · {r.court?.name}
                         </p>
                         <p className="text-2xs text-text-muted mt-0.5 tabular">
-                          {new Date(r.date).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                          <span className="tabular">{formatDate(r.date)}</span>
                           {' · '}
                           {r.startTime}
                         </p>
@@ -241,7 +255,7 @@ function PlayerDashboard() {
                           </span>
                         </div>
                         <p className="text-2xs text-text-muted tabular">
-                          {new Date(m.date).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                          <span className="tabular">{formatDate(m.date)}</span>
                           {' · '}
                           {m.startTime}
                         </p>
@@ -352,6 +366,45 @@ function PlayerDashboard() {
                 </Link>
               </div>
             </div>
+
+            {/* Mi historial — quick stats from match log */}
+            <SectionCard
+              title="Mi historial"
+              icon={<StickyNote className="w-4 h-4 text-text-secondary" />}
+              extra={<span className="text-2xs text-text-muted tabular">{logTotal}</span>}
+              action={{ label: 'Ver todo', href: '/matches/log' }}
+            >
+              {logTotal === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-2xs text-text-muted mb-3">Anotá tus partidos privados</p>
+                  <Link href="/matches/log" className="btn-secondary text-xs h-8">
+                    <Plus className="w-3 h-3" /> Registrar partido
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="text-center px-2 py-2 rounded-md bg-surface-light">
+                      <p className="text-2xs text-text-muted uppercase tracking-widest" style={{ letterSpacing: '0.1em' }}>Ganados</p>
+                      <p className="text-lg font-bold text-brand tabular tracking-tight-2 mt-0.5">{logWon}</p>
+                    </div>
+                    <div className="text-center px-2 py-2 rounded-md bg-surface-light">
+                      <p className="text-2xs text-text-muted uppercase tracking-widest" style={{ letterSpacing: '0.1em' }}>Perdidos</p>
+                      <p className="text-lg font-bold text-negative tabular tracking-tight-2 mt-0.5">{logLost}</p>
+                    </div>
+                    <div className="text-center px-2 py-2 rounded-md bg-surface-light">
+                      <p className="text-2xs text-text-muted uppercase tracking-widest" style={{ letterSpacing: '0.1em' }}>Win %</p>
+                      <p className="text-lg font-bold text-text-primary tabular tracking-tight-2 mt-0.5">
+                        {logEntries.length > 0 ? `${logWinRate}` : '—'}
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/matches/log" className="btn-secondary text-xs h-8 w-full justify-center">
+                    <Plus className="w-3 h-3" /> Registrar partido
+                  </Link>
+                </>
+              )}
+            </SectionCard>
 
             {/* Connections */}
             <SectionCard

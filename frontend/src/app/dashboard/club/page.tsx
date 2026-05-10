@@ -7,6 +7,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import RoleGuard from '@/components/RoleGuard';
 import ActivateRoleBanner from '@/components/ActivateRoleBanner';
+import { COUNTRIES, STATES_BY_COUNTRY, isValidE164 } from '@/lib/location';
+import PhoneInput from '@/components/PhoneInput';
 import {
   Plus,
   Building2,
@@ -27,15 +29,8 @@ import {
   Lock,
   Unlock,
   ArrowUpRight,
+  Navigation,
 } from 'lucide-react';
-
-const PROVINCES = [
-  'Buenos Aires', 'CABA', 'Cordoba', 'Santa Fe', 'Mendoza', 'Tucuman',
-  'Salta', 'Entre Rios', 'Misiones', 'Chaco', 'Corrientes',
-  'Santiago del Estero', 'San Juan', 'Jujuy', 'Rio Negro', 'Formosa',
-  'Neuquen', 'Chubut', 'San Luis', 'Catamarca', 'La Rioja', 'La Pampa',
-  'Santa Cruz', 'Tierra del Fuego',
-];
 
 const PAYMENT_METHODS = ['Efectivo', 'Transferencia', 'MercadoPago', 'Tarjeta'];
 
@@ -47,9 +42,12 @@ const RESERVATION_MODES = [
 type ClubFormData = {
   name: string;
   sports: string[];
-  address: string;
-  city: string;
+  country: string;
   state: string;
+  city: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
   phone: string;
   email: string;
   description: string;
@@ -60,9 +58,12 @@ type ClubFormData = {
 const INITIAL_FORM: ClubFormData = {
   name: '',
   sports: ['PADEL'],
-  address: '',
-  city: '',
+  country: 'Argentina',
   state: '',
+  city: '',
+  address: '',
+  latitude: undefined,
+  longitude: undefined,
   phone: '',
   email: '',
   description: '',
@@ -139,11 +140,36 @@ function ClubDashboard() {
 
   const canAdvanceStep = (): boolean => {
     if (step === 0) return clubForm.name.trim().length > 0 && clubForm.sports.length > 0;
-    if (step === 1) return clubForm.state.trim().length > 0 && clubForm.city.trim().length > 0;
+    if (step === 1) return clubForm.country.trim().length > 0 && clubForm.city.trim().length > 0;
     return true;
   };
 
+  const [geoLoading, setGeoLoading] = useState(false);
+  const captureMyLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      toast.error('Tu navegador no soporta geolocalización');
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        updateForm({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setGeoLoading(false);
+        toast.success('Coordenadas capturadas');
+      },
+      () => {
+        setGeoLoading(false);
+        toast.error('No pudimos obtener tu ubicación');
+      },
+      { timeout: 10000, maximumAge: 60_000 * 5 },
+    );
+  };
+
   const handleCreateClub = async () => {
+    if (clubForm.phone && !isValidE164(clubForm.phone)) {
+      toast.error('Revisá el celular del complejo');
+      return;
+    }
     setCreating(true);
     try {
       const payload: any = {
@@ -152,7 +178,10 @@ function ClubDashboard() {
         address: clubForm.address,
         city: clubForm.city,
         state: clubForm.state,
+        country: clubForm.country,
       };
+      if (clubForm.latitude  !== undefined) payload.latitude  = clubForm.latitude;
+      if (clubForm.longitude !== undefined) payload.longitude = clubForm.longitude;
       if (clubForm.phone.trim())       payload.phone = clubForm.phone;
       if (clubForm.email.trim())       payload.email = clubForm.email;
       if (clubForm.description.trim()) payload.description = clubForm.description;
@@ -243,46 +272,114 @@ function ClubDashboard() {
     </div>
   );
 
-  const renderStep1 = () => (
-    <div className="space-y-5 animate-fade-in">
-      <div>
-        <label className="label">Provincia *</label>
-        <div className="relative">
+  const renderStep1 = () => {
+    const states = STATES_BY_COUNTRY[clubForm.country] || null;
+    const hasGeo = clubForm.latitude !== undefined && clubForm.longitude !== undefined;
+    return (
+      <div className="space-y-5 animate-fade-in">
+        <div>
+          <label className="label">País *</label>
           <select
-            className="input appearance-none pr-10 cursor-pointer"
-            value={clubForm.state}
-            onChange={(e) => updateForm({ state: e.target.value })}
+            className="input"
+            value={clubForm.country}
+            onChange={(e) => updateForm({ country: e.target.value, state: '' })}
             required
           >
-            <option value="" disabled>Seleccioná una provincia</option>
-            {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.name}>{c.name}</option>
+            ))}
           </select>
-          <ChevronRight className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rotate-90 w-3.5 h-3.5 text-text-muted" />
+        </div>
+
+        <div>
+          <label className="label">{states ? 'Provincia *' : 'Estado / Región *'}</label>
+          {states ? (
+            <select
+              className="input"
+              value={clubForm.state}
+              onChange={(e) => updateForm({ state: e.target.value })}
+              required
+            >
+              <option value="" disabled>Seleccionar…</option>
+              {states.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          ) : (
+            <input
+              className="input"
+              value={clubForm.state}
+              onChange={(e) => updateForm({ state: e.target.value })}
+              placeholder="Estado o región"
+              required
+            />
+          )}
+        </div>
+
+        <div>
+          <label className="label">Ciudad *</label>
+          <input
+            className="input"
+            required
+            value={clubForm.city}
+            onChange={(e) => updateForm({ city: e.target.value })}
+            placeholder="Ej. Capital Federal"
+          />
+        </div>
+
+        <div>
+          <label className="label">Dirección</label>
+          <input
+            className="input"
+            value={clubForm.address}
+            onChange={(e) => updateForm({ address: e.target.value })}
+            placeholder="Av. Libertador 5000"
+          />
+        </div>
+
+        {/* Geo capture */}
+        <div className="border border-border-dark rounded-lg p-3.5 bg-surface-light/40">
+          <div className="flex items-start gap-3 mb-2.5">
+            <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+              hasGeo ? 'bg-brand text-brand-ink' : 'bg-surface text-text-muted'
+            }`}>
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text-primary">Coordenadas GPS</p>
+              <p className="text-2xs text-text-muted leading-relaxed">
+                Permiten a los jugadores encontrar tu complejo cuando filtran por cercanía.
+              </p>
+            </div>
+          </div>
+          {hasGeo ? (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-2xs text-text-secondary tabular font-mono">
+                {clubForm.latitude!.toFixed(5)}, {clubForm.longitude!.toFixed(5)}
+              </p>
+              <button
+                type="button"
+                onClick={() => updateForm({ latitude: undefined, longitude: undefined })}
+                className="btn-ghost text-2xs h-7"
+              >
+                Quitar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={captureMyLocation}
+              disabled={geoLoading}
+              className="btn-secondary text-xs h-8 w-full justify-center"
+            >
+              {geoLoading
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Capturando…</>
+                : <><Navigation className="w-3.5 h-3.5" /> Usar mi ubicación actual</>
+              }
+            </button>
+          )}
         </div>
       </div>
-
-      <div>
-        <label className="label">Ciudad *</label>
-        <input
-          className="input"
-          required
-          value={clubForm.city}
-          onChange={(e) => updateForm({ city: e.target.value })}
-          placeholder="Capital Federal"
-        />
-      </div>
-
-      <div>
-        <label className="label">Dirección</label>
-        <input
-          className="input"
-          value={clubForm.address}
-          onChange={(e) => updateForm({ address: e.target.value })}
-          placeholder="Av. Libertador 5000"
-        />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderStep2 = () => (
     <div className="space-y-5 animate-fade-in">
@@ -292,13 +389,12 @@ function ClubDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">Teléfono</label>
-          <input
-            className="input"
-            type="tel"
+          <label className="label">Celular</label>
+          <PhoneInput
             value={clubForm.phone}
-            onChange={(e) => updateForm({ phone: e.target.value })}
-            placeholder="+54 11 1234-5678"
+            onChange={(e164) => updateForm({ phone: e164 })}
+            defaultCountryName={clubForm.country}
+            placeholder="11 1234 5678"
           />
         </div>
         <div>

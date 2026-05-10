@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDateTime } from '@/lib/date';
 import Link from 'next/link';
 
 export default function NotificationsPage() {
@@ -116,12 +117,7 @@ export default function NotificationsPage() {
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      {new Date(n.createdAt).toLocaleString('es-AR', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      <span className="tabular">{formatDateTime(n.createdAt)}</span>
                     </p>
                   </div>
 

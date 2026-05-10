@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import toast from 'react-hot-toast';
 import RoleGuard from '@/components/RoleGuard';
 
@@ -452,7 +453,7 @@ function CreateTournamentForm() {
                       <div className="flex items-center justify-between">
                         <span className="text-text-muted text-sm">Inicio</span>
                         <span className="text-white font-medium">
-                          {new Date(startDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          <span className="tabular">{formatDate(startDate)}</span>
                         </span>
                       </div>
                     </>
@@ -463,7 +464,7 @@ function CreateTournamentForm() {
                       <div className="flex items-center justify-between">
                         <span className="text-text-muted text-sm">Fin</span>
                         <span className="text-white font-medium">
-                          {new Date(endDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          <span className="tabular">{formatDate(endDate)}</span>
                         </span>
                       </div>
                     </>
@@ -474,7 +475,7 @@ function CreateTournamentForm() {
                       <div className="flex items-center justify-between">
                         <span className="text-text-muted text-sm">Cierre inscripcion</span>
                         <span className="text-white font-medium">
-                          {new Date(registrationEnd).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          <span className="tabular">{formatDate(registrationEnd)}</span>
                         </span>
                       </div>
                     </>

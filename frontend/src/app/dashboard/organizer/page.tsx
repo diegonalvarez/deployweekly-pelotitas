@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import RoleGuard from '@/components/RoleGuard';
@@ -243,10 +244,10 @@ function OrganizerDashboard() {
                           </p>
                         )}
                         {(t.startDate || t.endDate) && (
-                          <p className="text-xs text-text-muted mt-1">
-                            {t.startDate && new Date(t.startDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                            {t.startDate && t.endDate && ' - '}
-                            {t.endDate && new Date(t.endDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          <p className="text-xs text-text-muted mt-1 tabular">
+                            {t.startDate && formatDate(t.startDate)}
+                            {t.startDate && t.endDate && ' → '}
+                            {t.endDate && formatDate(t.endDate)}
                           </p>
                         )}
                       </div>

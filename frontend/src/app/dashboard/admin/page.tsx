@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import RoleGuard from '@/components/RoleGuard';
@@ -827,8 +828,8 @@ function AdminDashboard() {
                         <p className="text-text-muted text-sm mt-2 leading-relaxed">{r.comment}</p>
                       )}
                       {r.createdAt && (
-                        <p className="text-text-muted text-xs mt-2">
-                          {new Date(r.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <p className="text-text-muted text-xs mt-2 tabular">
+                          {formatDate(r.createdAt)}
                         </p>
                       )}
                     </div>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate as fmt } from '@/lib/date';
 import toast from 'react-hot-toast';
 import RoleGuard from '@/components/RoleGuard';
 
@@ -682,12 +683,45 @@ function TeamsTab({ tournament, onRefresh }: { tournament: Tournament; onRefresh
    ═════════════════════════════════════════════════════════════ */
 
 function GroupsTab({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
+  const router = useRouter();
+  const [openingScoreboard, setOpeningScoreboard] = useState<string | null>(null);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [groupMatches, setGroupMatches] = useState<Record<string, GroupMatch[]>>({});
   const [groupStandings, setGroupStandings] = useState<Record<string, GroupMember[]>>({});
   const [loadingMatches, setLoadingMatches] = useState<Record<string, boolean>>({});
   const [activeMatch, setActiveMatch] = useState<{ matchId: string; homeTeamName: string; awayTeamName: string; homeTeamId: string; awayTeamId: string } | null>(null);
   const [finalizingGroup, setFinalizingGroup] = useState<string | null>(null);
+
+  const openOfficialScoreboard = async (
+    tournamentMatchId: string,
+    homeLabel: string,
+    awayLabel: string,
+  ) => {
+    setOpeningScoreboard(tournamentMatchId);
+    try {
+      // Reuse existing scoreboard for this match if any, else create a new official one.
+      const peers = await api.get<{ official: any; mine: any }>(
+        `/scoreboards/by-tournament-match/${tournamentMatchId}`,
+      ).catch(() => ({ official: null, mine: null }));
+      let id = peers.official?.id;
+      if (!id) {
+        const created = await api.post<any>('/scoreboards', {
+          sport: tournament.sport,
+          homeLabel, awayLabel,
+          isOfficial: true,
+          tournamentMatchId,
+          totalSets: 3,
+          scoringMode: 'STANDARD',
+        });
+        id = created.id;
+      }
+      router.push(`/scoreboard/${id}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Error al abrir anotador');
+    } finally {
+      setOpeningScoreboard(null);
+    }
+  };
 
   const groups = tournament.groups || [];
 
@@ -917,24 +951,35 @@ function GroupsTab({ tournament, onRefresh }: { tournament: Tournament; onRefres
                               </span>
                             </div>
 
-                            {!hasResult && match.homeTeamId && match.awayTeamId && (
-                              <button
-                                onClick={() => setActiveMatch({
-                                  matchId: match.id,
-                                  homeTeamName: homeName,
-                                  awayTeamName: awayName,
-                                  homeTeamId: match.homeTeamId!,
-                                  awayTeamId: match.awayTeamId!,
-                                })}
-                                className="btn-secondary text-xs ml-2 flex-shrink-0"
-                              >
-                                Cargar resultado
-                              </button>
-                            )}
-
-                            {hasResult && (
-                              <span className="badge-green text-xs ml-2 flex-shrink-0">Jugado</span>
-                            )}
+                            <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                              {match.homeTeamId && match.awayTeamId && (
+                                <button
+                                  onClick={() => openOfficialScoreboard(match.id, homeName, awayName)}
+                                  disabled={openingScoreboard === match.id}
+                                  className="btn-secondary text-xs"
+                                  title="Abrir anotador oficial"
+                                >
+                                  {openingScoreboard === match.id ? '…' : '🎯 Anotador'}
+                                </button>
+                              )}
+                              {!hasResult && match.homeTeamId && match.awayTeamId && (
+                                <button
+                                  onClick={() => setActiveMatch({
+                                    matchId: match.id,
+                                    homeTeamName: homeName,
+                                    awayTeamName: awayName,
+                                    homeTeamId: match.homeTeamId!,
+                                    awayTeamId: match.awayTeamId!,
+                                  })}
+                                  className="btn-secondary text-xs"
+                                >
+                                  Cargar resultado
+                                </button>
+                              )}
+                              {hasResult && (
+                                <span className="badge-green text-xs">Jugado</span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -1190,9 +1235,7 @@ function ConfigTab({ tournament, onRefresh }: { tournament: Tournament; onRefres
     }
   };
 
-  const formatDate = (d?: string) => d
-    ? new Date(d).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '-';
+  const formatDate = (d?: string) => fmt(d);
 
   return (
     <div className="animate-fade-in-up space-y-6">

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import toast from 'react-hot-toast';
 
 function Spinner() {
@@ -216,11 +217,7 @@ export default function ClubPlayersPage() {
                         </p>
                         {tab === 'connected' && conn.updatedAt && (
                           <p className="text-xs text-text-muted mt-0.5">
-                            Conectado desde {new Date(conn.updatedAt).toLocaleDateString('es-AR', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
+                            Conectado desde <span className="tabular">{formatDate(conn.updatedAt)}</span>
                           </p>
                         )}
                         {tab === 'pending' && conn.message && (

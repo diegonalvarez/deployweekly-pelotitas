@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
+import PhoneInput from '@/components/PhoneInput';
+import { isValidE164 } from '@/lib/location';
 
 const PAYMENT_METHODS = ['Efectivo', 'Transferencia', 'MercadoPago', 'Tarjeta'];
 
@@ -45,6 +47,9 @@ export default function ClubSettingsPage() {
   const [reservationMode, setReservationMode] = useState('OPEN');
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [sports, setSports] = useState<string[]>([]);
+  // Country of the club's main location — used so PhoneInput defaults
+  // to the right dial code when the user hasn't yet entered a phone.
+  const [clubCountry, setClubCountry] = useState<string>('Argentina');
 
   // Auth guard
   useEffect(() => {
@@ -65,6 +70,8 @@ export default function ClubSettingsPage() {
       setReservationMode(data.reservationMode || 'OPEN');
       setPaymentMethods(data.paymentMethods || []);
       setSports(data.sports || []);
+      const mainLoc = data.locations?.find((l: any) => l.isMain) || data.locations?.[0];
+      if (mainLoc?.country) setClubCountry(mainLoc.country);
     } catch (err: any) {
       toast.error(err.message || 'Error al cargar datos del complejo');
     } finally {
@@ -95,6 +102,10 @@ export default function ClubSettingsPage() {
     }
     if (sports.length === 0) {
       toast.error('Selecciona al menos un deporte');
+      return;
+    }
+    if (phone && !isValidE164(phone)) {
+      toast.error('Revisá el celular del complejo');
       return;
     }
 
@@ -212,13 +223,12 @@ export default function ClubSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="label">Telefono</label>
-                <input
-                  className="input"
-                  type="tel"
+                <label className="label">Celular</label>
+                <PhoneInput
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="+54 11 1234-5678"
+                  onChange={setPhone}
+                  defaultCountryName={clubCountry}
+                  placeholder="11 1234 5678"
                 />
               </div>
               <div>

@@ -2,8 +2,10 @@
 
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { formatDateTime } from '@/lib/date';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import PhantomClaimBanner from '@/components/PhantomClaimBanner';
 
 interface TimelineActivity {
   id: string;
@@ -88,6 +90,9 @@ export default function ProfilePage() {
       <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 py-8 sm:py-10">
+        {/* Phantom claim banner — only renders if there are mentions to claim */}
+        <div className="mb-6"><PhantomClaimBanner /></div>
+
         {/* Header */}
         <div className="flex justify-between items-center mb-8 animate-fade-in-up">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Mi perfil</h1>
@@ -230,14 +235,8 @@ export default function ProfilePage() {
                       <p className="text-sm text-text-secondary leading-relaxed">
                         {activity.description}
                       </p>
-                      <p className="text-xs text-text-muted mt-0.5">
-                        {new Date(activity.date).toLocaleDateString('es-AR', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                      <p className="text-xs text-text-muted mt-0.5 tabular">
+                        {formatDateTime(activity.date)}
                       </p>
                     </div>
                   </div>

@@ -5,206 +5,246 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import PhoneInput from '@/components/PhoneInput';
+import { isValidE164 } from '@/lib/location';
+import { useSubscription } from '@/lib/subscription';
+import {
+  ArrowLeft,
+  User as UserIcon,
+  GraduationCap,
+  Activity,
+  Lock,
+  Save,
+  Loader2,
+  Check,
+  X,
+  Sparkles,
+} from 'lucide-react';
 
+/* ─────────────────────────────────────────────────────────────
+   Outer page — auth gate. The form lives in EditProfileForm
+   which only mounts once `user` is loaded, so useState captures
+   real data instead of empty strings.
+   ───────────────────────────────────────────────────────────── */
 export default function EditProfilePage() {
-  const { user, refreshUser } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
+  if (loading) {
+    return <FullPageSpinner />;
+  }
+
+  if (!user) {
+    if (typeof window !== 'undefined') router.push('/login');
+    return <FullPageSpinner />;
+  }
+
+  return <EditProfileForm user={user} />;
+}
+
+function FullPageSpinner() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="flex items-center gap-3 text-text-muted">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        Cargando…
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Form
+   ───────────────────────────────────────────────────────────── */
+function EditProfileForm({ user }: { user: any }) {
+  const { refreshUser } = useAuth();
+  const { isActive: subActive, configured: subConfigured } = useSubscription();
+  const router = useRouter();
+
+  const pp = user.playerProfile;
+  const cp = user.coachProfile;
+
   const [form, setForm] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    phone: (user as any)?.phone || '',
+    firstName: user.firstName || '',
+    lastName:  user.lastName  || '',
+    phone:     user.phone     || '',
   });
 
   const [profileForm, setProfileForm] = useState({
-    city: user?.playerProfile?.city || '',
-    bio: user?.playerProfile?.bio || '',
-    hand: user?.playerProfile?.hand || '',
-    padelLevel: user?.playerProfile?.padelLevel || '',
-    tennisLevel: user?.playerProfile?.tennisLevel || '',
-    preferredPosition: user?.playerProfile?.preferredPosition || '',
+    city:              pp?.city              || pp?.homeCity || '',
+    bio:               pp?.bio               || '',
+    hand:              pp?.hand              || '',
+    padelLevel:        pp?.padelLevel != null ? String(pp.padelLevel) : '',
+    tennisLevel:       pp?.tennisLevel != null ? String(pp.tennisLevel) : '',
+    preferredPosition: pp?.preferredPosition || '',
   });
 
+  // Privacy lives on PlayerProfile (showStats, showLevel, …). Defaults true.
   const [privacy, setPrivacy] = useState({
-    showStats: (user as any)?.privacy?.showStats ?? true,
-    showMatchHistory: (user as any)?.privacy?.showMatchHistory ?? true,
-    showLevel: (user as any)?.privacy?.showLevel ?? true,
-    showCity: (user as any)?.privacy?.showCity ?? true,
-    showAvailability: (user as any)?.privacy?.showAvailability ?? true,
-    showTournaments: (user as any)?.privacy?.showTournaments ?? true,
+    showStats:        pp?.showStats        ?? true,
+    showMatchHistory: pp?.showMatchHistory ?? true,
+    showLevel:        pp?.showLevel        ?? true,
+    showCity:         pp?.showCity         ?? true,
+    showAvailability: pp?.showAvailability ?? true,
+    showTournaments:  pp?.showTournaments  ?? true,
   });
 
-  const coachProfile = user?.coachProfile;
   const [coachForm, setCoachForm] = useState({
-    bio: coachProfile?.bio || '',
-    sports: (coachProfile?.sports as string[]) || [],
-    experience: coachProfile?.experience || '',
-    certifications: coachProfile?.certifications || '',
-    pricePerHour: coachProfile?.pricePerHour || '',
-    groupPrice: coachProfile?.groupPrice || '',
+    bio:            cp?.bio             || '',
+    sports:         (cp?.sports as string[]) || [],
+    experience:     cp?.experience      || '',
+    certifications: cp?.certifications  || '',
+    pricePerHour:   cp?.pricePerHour != null ? String(cp.pricePerHour) : '',
+    groupPrice:     cp?.groupPrice   != null ? String(cp.groupPrice)   : '',
   });
 
   const [saving, setSaving] = useState(false);
 
   const toggleCoachSport = (sport: string) => {
-    setCoachForm(prev => ({
+    setCoachForm((prev) => ({
       ...prev,
       sports: prev.sports.includes(sport)
-        ? prev.sports.filter(s => s !== sport)
+        ? prev.sports.filter((s) => s !== sport)
         : [...prev.sports, sport],
     }));
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.phone && !isValidE164(form.phone)) {
+      toast.error('Revisá el celular');
+      return;
+    }
     setSaving(true);
     try {
       await api.patch('/users/me', form);
-      if (user?.roles.includes('PLAYER')) {
+
+      if (user.roles?.includes('PLAYER')) {
         await api.patch('/users/me/player-profile', {
-          ...profileForm,
-          padelLevel: profileForm.padelLevel ? parseFloat(profileForm.padelLevel as string) : undefined,
-          tennisLevel: profileForm.tennisLevel ? parseFloat(profileForm.tennisLevel as string) : undefined,
+          city: profileForm.city || undefined,
+          bio:  profileForm.bio  || undefined,
           hand: profileForm.hand || undefined,
+          padelLevel:  profileForm.padelLevel  ? parseFloat(profileForm.padelLevel)  : undefined,
+          tennisLevel: profileForm.tennisLevel ? parseFloat(profileForm.tennisLevel) : undefined,
+          preferredPosition: profileForm.preferredPosition || undefined,
           sports: [
-            ...(profileForm.padelLevel ? ['PADEL'] : []),
+            ...(profileForm.padelLevel  ? ['PADEL']  : []),
             ...(profileForm.tennisLevel ? ['TENNIS'] : []),
           ],
         });
       }
-      if (user?.roles.includes('COACH')) {
+
+      if (user.roles?.includes('COACH')) {
         await api.patch('/coaches/me', {
-          bio: coachForm.bio || undefined,
-          sports: coachForm.sports.length > 0 ? coachForm.sports : undefined,
-          experience: coachForm.experience || undefined,
+          bio:            coachForm.bio || undefined,
+          sports:         coachForm.sports.length > 0 ? coachForm.sports : undefined,
+          experience:     coachForm.experience || undefined,
           certifications: coachForm.certifications || undefined,
-          pricePerHour: coachForm.pricePerHour ? parseFloat(coachForm.pricePerHour as string) : undefined,
-          groupPrice: coachForm.groupPrice ? parseFloat(coachForm.groupPrice as string) : undefined,
+          pricePerHour: coachForm.pricePerHour ? parseFloat(coachForm.pricePerHour) : undefined,
+          groupPrice:   coachForm.groupPrice   ? parseFloat(coachForm.groupPrice)   : undefined,
         });
       }
-      await api.patch('/users/me/privacy', privacy);
+
+      // Privacy is gated by subscription. Backend enforces; we just avoid
+      // sending if we know it would be rejected.
+      if (subActive) {
+        await api.patch('/users/me/privacy', privacy);
+      }
+
       await refreshUser();
       toast.success('Perfil actualizado');
       router.push('/profile');
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Error al guardar');
     } finally {
       setSaving(false);
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="flex items-center gap-3 text-text-muted">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Cargando...
-        </div>
-      </div>
-    );
-  }
+  const isPlayer = user.roles?.includes('PLAYER');
+  const isCoach  = user.roles?.includes('COACH');
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] relative">
-      <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
-
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 sm:py-10">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in-up">
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-brand transition-colors mb-4"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Volver
-          </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Editar perfil</h1>
+    <div className="bg-base">
+      {/* Page header */}
+      <div className="border-b border-border-dark bg-base sticky top-14 z-30 lg:top-0 lg:relative">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-1 text-2xs text-text-muted hover:text-text-primary mb-1.5 transition-colors"
+            >
+              <ArrowLeft className="w-3 h-3" /> Volver
+            </button>
+            <p className="eyebrow text-text-muted">Perfil</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight-2 mt-1">
+              Editar perfil
+            </h1>
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSave} className="space-y-6">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <form onSubmit={handleSave} className="space-y-5">
           {/* Personal data */}
-          <div className="card-elevated animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-              <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Datos personales
-            </h2>
-
+          <SectionCard title="Datos personales" icon={<UserIcon className="w-4 h-4 text-brand" />}>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Nombre</label>
+              <Field label="Nombre">
                 <input
                   className="input"
                   value={form.firstName}
-                  onChange={e => setForm({ ...form, firstName: e.target.value })}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                   placeholder="Juan"
                 />
-              </div>
-              <div>
-                <label className="label">Apellido</label>
+              </Field>
+              <Field label="Apellido">
                 <input
                   className="input"
                   value={form.lastName}
-                  onChange={e => setForm({ ...form, lastName: e.target.value })}
-                  placeholder="Perez"
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  placeholder="Pérez"
                 />
-              </div>
+              </Field>
               <div className="col-span-2">
-                <label className="label">Telefono</label>
-                <input
-                  className="input"
-                  value={form.phone}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+54 11 5555 1234"
-                />
+                <Field label="Celular">
+                  <PhoneInput
+                    value={form.phone}
+                    onChange={(e164) => setForm({ ...form, phone: e164 })}
+                    defaultCountryName={
+                      pp?.homeCountry || pp?.currentCountry || 'Argentina'
+                    }
+                    placeholder="11 5555 1234"
+                  />
+                </Field>
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          {/* Sports profile */}
-          {user.roles.includes('PLAYER') && (
-            <div className="card-elevated animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-                <svg className="w-5 h-5 text-padel" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Perfil deportivo
-              </h2>
-
+          {/* Player profile */}
+          {isPlayer && (
+            <SectionCard title="Perfil deportivo" icon={<Activity className="w-4 h-4 text-sky" />}>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Ciudad</label>
+                <Field label="Ciudad">
                   <input
                     className="input"
                     value={profileForm.city}
-                    onChange={e => setProfileForm({ ...profileForm, city: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
                     placeholder="Buenos Aires"
                   />
-                </div>
-                <div>
-                  <label className="label">Mano habil</label>
+                </Field>
+                <Field label="Mano hábil">
                   <select
-                    className="input appearance-none cursor-pointer"
+                    className="input cursor-pointer"
                     value={profileForm.hand}
-                    onChange={e => setProfileForm({ ...profileForm, hand: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, hand: e.target.value })}
                   >
                     <option value="">Seleccionar</option>
                     <option value="RIGHT">Derecha</option>
                     <option value="LEFT">Izquierda</option>
                     <option value="AMBIDEXTROUS">Ambidiestro</option>
                   </select>
-                </div>
-                <div>
-                  <label className="label">
-                    Nivel Padel
-                    <span className="text-text-muted font-normal ml-1">(1-10)</span>
-                  </label>
+                </Field>
+                <Field label="Nivel padel" hint="1–10">
                   <input
                     type="number"
                     min="1"
@@ -212,15 +252,11 @@ export default function EditProfilePage() {
                     step="0.5"
                     className="input"
                     value={profileForm.padelLevel}
-                    onChange={e => setProfileForm({ ...profileForm, padelLevel: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, padelLevel: e.target.value })}
                     placeholder="5.5"
                   />
-                </div>
-                <div>
-                  <label className="label">
-                    Nivel Tenis
-                    <span className="text-text-muted font-normal ml-1">(1-10)</span>
-                  </label>
+                </Field>
+                <Field label="Nivel tenis" hint="1–10">
                   <input
                     type="number"
                     min="1"
@@ -228,199 +264,279 @@ export default function EditProfilePage() {
                     step="0.5"
                     className="input"
                     value={profileForm.tennisLevel}
-                    onChange={e => setProfileForm({ ...profileForm, tennisLevel: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, tennisLevel: e.target.value })}
                     placeholder="4.0"
                   />
-                </div>
-                <div>
-                  <label className="label">Posicion preferida</label>
+                </Field>
+                <Field label="Posición preferida">
                   <input
                     className="input"
-                    placeholder="Drive / Reves"
                     value={profileForm.preferredPosition}
-                    onChange={e => setProfileForm({ ...profileForm, preferredPosition: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, preferredPosition: e.target.value })}
+                    placeholder="Drive / Revés"
                   />
-                </div>
+                </Field>
                 <div className="col-span-2">
-                  <label className="label">Bio</label>
-                  <textarea
-                    className="textarea"
-                    rows={3}
-                    value={profileForm.bio}
-                    onChange={e => setProfileForm({ ...profileForm, bio: e.target.value })}
-                    placeholder="Contanos un poco sobre vos como jugador..."
-                  />
+                  <Field label="Bio">
+                    <textarea
+                      className="textarea"
+                      rows={3}
+                      value={profileForm.bio}
+                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                      placeholder="Contanos un poco sobre vos como jugador…"
+                    />
+                  </Field>
                 </div>
               </div>
-            </div>
+            </SectionCard>
           )}
 
           {/* Coach profile */}
-          {user.roles.includes('COACH') && (
-            <div className="card-elevated animate-fade-in-up" style={{ animationDelay: '250ms' }}>
-              <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-                <svg className="w-5 h-5 text-padel" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Perfil de profesor
-              </h2>
-
+          {isCoach && (
+            <SectionCard title="Perfil de profesor" icon={<GraduationCap className="w-4 h-4 text-clay" />}>
               <div className="space-y-4">
-                {/* Bio */}
-                <div>
-                  <label className="label">Bio</label>
+                <Field label="Bio">
                   <textarea
-                    className="input w-full resize-none"
+                    className="textarea"
                     rows={3}
                     value={coachForm.bio}
-                    onChange={e => setCoachForm({ ...coachForm, bio: e.target.value })}
-                    placeholder="Contanos sobre tu experiencia como profesor..."
+                    onChange={(e) => setCoachForm({ ...coachForm, bio: e.target.value })}
+                    placeholder="Contanos sobre tu experiencia como profesor…"
                   />
-                </div>
+                </Field>
 
-                {/* Sports pill selector */}
-                <div>
-                  <label className="label">Deportes</label>
+                <Field label="Deportes">
                   <div className="flex gap-2">
-                    {[
-                      { value: 'PADEL', label: 'Padel' },
-                      { value: 'TENNIS', label: 'Tenis' },
-                    ].map(sport => (
-                      <button
-                        key={sport.value}
-                        type="button"
-                        onClick={() => toggleCoachSport(sport.value)}
-                        className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                          coachForm.sports.includes(sport.value)
-                            ? sport.value === 'PADEL'
-                              ? 'bg-padel text-white shadow-lg shadow-padel/20'
-                              : 'bg-brand text-black shadow-lg shadow-brand/20'
-                            : 'bg-surface-light text-text-secondary hover:bg-surface-light/80 border border-border-dark'
-                        }`}
-                      >
-                        {sport.label}
-                      </button>
-                    ))}
+                    {[{ v: 'PADEL', l: 'Padel', cls: 'bg-sky text-white' },
+                      { v: 'TENNIS', l: 'Tenis', cls: 'bg-clay text-white' }].map((s) => {
+                      const active = coachForm.sports.includes(s.v);
+                      return (
+                        <button
+                          key={s.v}
+                          type="button"
+                          onClick={() => toggleCoachSport(s.v)}
+                          className={`px-4 h-9 rounded-lg text-xs font-medium transition-all border ${
+                            active
+                              ? `${s.cls} border-transparent`
+                              : 'bg-surface-light text-text-secondary border-border-dark hover:border-border-default'
+                          }`}
+                        >
+                          {active && <Check className="w-3 h-3 inline -mt-0.5 mr-1" strokeWidth={3} />}
+                          {s.l}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
+                </Field>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Experience */}
-                  <div>
-                    <label className="label">Experiencia</label>
+                  <Field label="Experiencia">
                     <input
                       className="input"
                       value={coachForm.experience}
-                      onChange={e => setCoachForm({ ...coachForm, experience: e.target.value })}
-                      placeholder="5 anos"
+                      onChange={(e) => setCoachForm({ ...coachForm, experience: e.target.value })}
+                      placeholder="5 años"
                     />
-                  </div>
-
-                  {/* Certifications */}
-                  <div>
-                    <label className="label">Certificaciones</label>
+                  </Field>
+                  <Field label="Certificaciones">
                     <input
                       className="input"
                       value={coachForm.certifications}
-                      onChange={e => setCoachForm({ ...coachForm, certifications: e.target.value })}
-                      placeholder="AAP, FIT..."
+                      onChange={(e) => setCoachForm({ ...coachForm, certifications: e.target.value })}
+                      placeholder="AAP, FIT…"
                     />
-                  </div>
-
-                  {/* Price per hour */}
-                  <div>
-                    <label className="label">Precio por hora ($)</label>
+                  </Field>
+                  <Field label="Precio por hora ($)">
                     <input
                       type="number"
                       min="0"
                       step="100"
                       className="input"
                       value={coachForm.pricePerHour}
-                      onChange={e => setCoachForm({ ...coachForm, pricePerHour: e.target.value })}
+                      onChange={(e) => setCoachForm({ ...coachForm, pricePerHour: e.target.value })}
                       placeholder="5000"
                     />
-                  </div>
-
-                  {/* Group price */}
-                  <div>
-                    <label className="label">Precio grupal ($)</label>
+                  </Field>
+                  <Field label="Precio grupal ($)">
                     <input
                       type="number"
                       min="0"
                       step="100"
                       className="input"
                       value={coachForm.groupPrice}
-                      onChange={e => setCoachForm({ ...coachForm, groupPrice: e.target.value })}
+                      onChange={(e) => setCoachForm({ ...coachForm, groupPrice: e.target.value })}
                       placeholder="3000"
                     />
-                  </div>
+                  </Field>
                 </div>
               </div>
-            </div>
+            </SectionCard>
           )}
 
-          {/* Privacy controls */}
-          <div className="card-elevated animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-              <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Privacidad
-            </h2>
-
-            <div className="space-y-4">
-              {[
-                { key: 'showStats' as const, label: 'Mostrar estadisticas', desc: 'Partidos jugados, ganados y perdidos' },
-                { key: 'showMatchHistory' as const, label: 'Mostrar historial de partidos', desc: 'Tu historial completo de partidos' },
-                { key: 'showLevel' as const, label: 'Mostrar nivel', desc: 'Tu nivel de padel y tenis' },
-                { key: 'showCity' as const, label: 'Mostrar ciudad', desc: 'Tu ciudad en tu perfil publico' },
-                { key: 'showAvailability' as const, label: 'Mostrar disponibilidad', desc: 'Tu estado de disponibilidad para jugar' },
-                { key: 'showTournaments' as const, label: 'Mostrar torneos', desc: 'Torneos en los que participas' },
-              ].map((setting) => (
-                <button
-                  key={setting.key}
-                  type="button"
-                  onClick={() => setPrivacy({ ...privacy, [setting.key]: !privacy[setting.key] })}
-                  className="flex items-center gap-4 w-full text-left group"
-                >
-                  <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${privacy[setting.key] ? 'bg-brand' : 'bg-surface-light border border-border-dark'}`}>
-                    <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 shadow ${privacy[setting.key] ? 'left-[22px] bg-black' : 'left-0.5 bg-text-muted'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white group-hover:text-brand transition-colors">{setting.label}</p>
-                    <p className="text-xs text-text-muted">{setting.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Privacy — gated behind active subscription. */}
+          {isPlayer && (
+            <PrivacySection
+              isActive={subActive}
+              configured={subConfigured}
+              privacy={privacy}
+              setPrivacy={setPrivacy}
+            />
+          )}
 
           {/* Actions */}
-          <div className="flex gap-3 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-            <button type="submit" className="btn-primary flex-1 sm:flex-none" disabled={saving}>
-              {saving ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Guardando...
-                </span>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Guardar cambios
-                </>
-              )}
+          <div className="flex items-center gap-3 pt-2">
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Guardando…</>
+                : <><Save className="w-3.5 h-3.5" /> Guardar cambios</>}
             </button>
-            <button type="button" onClick={() => router.back()} className="btn-secondary">
+            <button type="button" onClick={() => router.back()} className="btn-ghost">
               Cancelar
             </button>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Local primitives
+   ───────────────────────────────────────────────────────────── */
+function SectionCard({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="card-elevated">
+      <header className="flex items-center gap-2.5 mb-5">
+        {icon}
+        <h2 className="text-sm font-semibold text-text-primary tracking-tight">{title}</h2>
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="label">
+        {label}
+        {hint && <span className="text-text-faint font-normal ml-1 normal-case tracking-normal">({hint})</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Privacy section — gated behind active subscription. UI is the
+   first fence; backend rejects unauthorised PATCH /users/me/privacy
+   even if a determined user bypasses the disabled state.
+   ───────────────────────────────────────────────────────────── */
+function PrivacySection({
+  isActive,
+  configured,
+  privacy,
+  setPrivacy,
+}: {
+  isActive: boolean;
+  configured: boolean;
+  privacy: any;
+  setPrivacy: (p: any) => void;
+}) {
+  const items = [
+    { key: 'showStats',        label: 'Mostrar estadísticas',     desc: 'Partidos jugados, ganados y perdidos' },
+    { key: 'showMatchHistory', label: 'Mostrar historial',        desc: 'Tu historial completo de partidos' },
+    { key: 'showLevel',        label: 'Mostrar nivel',            desc: 'Tu nivel de padel y tenis' },
+    { key: 'showCity',         label: 'Mostrar ciudad',           desc: 'Tu ciudad en el perfil público' },
+    { key: 'showAvailability', label: 'Mostrar disponibilidad',   desc: 'Estado "disponible para jugar"' },
+    { key: 'showTournaments',  label: 'Mostrar torneos',          desc: 'Torneos en los que participás' },
+  ] as const;
+
+  return (
+    <section className="card-elevated relative overflow-hidden">
+      <header className="flex items-center justify-between gap-2 mb-5">
+        <div className="flex items-center gap-2.5">
+          <Lock className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-text-muted'}`} />
+          <h2 className="text-sm font-semibold text-text-primary tracking-tight">
+            Privacidad
+          </h2>
+          <span className="badge-brand">Pro</span>
+        </div>
+        {!isActive && (
+          <a href="/billing" className="btn-primary text-xs h-8">
+            Activar suscripción
+          </a>
+        )}
+      </header>
+
+      {!isActive && (
+        <div className="rounded-lg border border-brand/20 bg-brand/5 p-3.5 mb-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-md bg-brand/15 text-brand flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text-primary">Función Pro</p>
+            <p className="text-xs text-text-secondary leading-relaxed mt-0.5">
+              Los controles de privacidad son parte de{' '}
+              <span className="text-brand font-semibold">pelotitas Pro</span>.
+              Tu perfil se muestra completo por defecto. Suscribite para
+              decidir qué información mostrar y a quién.
+            </p>
+            {!configured && (
+              <p className="text-2xs text-warning mt-2">
+                ⚠ La integración con Stripe no está configurada en este servidor.
+                Contactá al admin.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={`space-y-3 transition-opacity ${isActive ? '' : 'opacity-50 pointer-events-none select-none'}`}>
+        {items.map((it) => {
+          const val = privacy[it.key];
+          return (
+            <button
+              key={it.key}
+              type="button"
+              onClick={() => setPrivacy({ ...privacy, [it.key]: !val })}
+              className="flex items-center gap-3 w-full text-left group"
+              disabled={!isActive}
+            >
+              <div className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${
+                val ? 'bg-brand' : 'bg-surface-light border border-border-dark'
+              }`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all shadow ${
+                  val ? 'left-[18px] bg-brand-ink' : 'left-0.5 bg-text-muted'
+                }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary">{it.label}</p>
+                <p className="text-2xs text-text-muted">{it.desc}</p>
+              </div>
+              {val
+                ? <Check className="w-3.5 h-3.5 text-brand shrink-0" strokeWidth={3} />
+                : <X     className="w-3.5 h-3.5 text-text-muted shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }

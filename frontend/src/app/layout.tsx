@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import '@/styles/globals.css';
 import { AuthProvider } from '@/lib/auth';
+import { LocationProvider } from '@/lib/location';
+import { SubscriptionProvider } from '@/lib/subscription';
 import LayoutSwitcher from '@/components/layout/LayoutSwitcher';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import InstallPrompt from '@/components/InstallPrompt';
+import PWARegister from '@/components/PWARegister';
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
@@ -41,8 +44,11 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  // iOS safe-area: viewport-fit=cover lets us read env(safe-area-inset-*).
   viewportFit: 'cover',
   themeColor: '#0A0E14',
+  // Disable iOS auto-zoom on input focus (font-size >= 16px in inputs already).
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -52,11 +58,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`dark ${inter.variable} ${jetbrains.variable}`}>
+      <head>
+        {/* iOS — Add to Home Screen experience */}
+        <link rel="apple-touch-icon" href="/icon.svg" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Pelotitas" />
+        {/* Android Chrome */}
+        <meta name="application-name" content="Pelotitas" />
+        <meta name="theme-color" content="#0A0E14" />
+        {/* Prevent phone-number autodetection in Safari */}
+        <meta name="format-detection" content="telephone=no" />
+      </head>
       <body className={`${inter.className} bg-base text-text-primary`}>
+        <PWARegister />
         <AuthProvider>
-          <EmailVerificationBanner />
-          <InstallPrompt />
-          <LayoutSwitcher>{children}</LayoutSwitcher>
+          <SubscriptionProvider>
+            <LocationProvider>
+              <EmailVerificationBanner />
+              <InstallPrompt />
+              <LayoutSwitcher>{children}</LayoutSwitcher>
+            </LocationProvider>
+          </SubscriptionProvider>
           <Toaster
             position="top-right"
             toastOptions={{
