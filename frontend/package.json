@@ -5,17 +5,37 @@
   "scripts": {
     "dev": "next dev -p 3098",
     "build": "next build",
-    "start": "next start -p 3098"
+    "start": "next start -p 3098",
+    "mobile:add:android": "cap add android",
+    "mobile:add:ios": "cap add ios",
+    "mobile:sync": "cap sync",
+    "mobile:android": "cap run android",
+    "mobile:ios": "cap run ios",
+    "mobile:open:android": "cap open android",
+    "mobile:open:ios": "cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.4",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/camera": "^7.0.5",
+    "@capacitor/core": "^7.6.4",
+    "@capacitor/haptics": "^7.0.5",
+    "@capacitor/ios": "^7.6.4",
+    "@capacitor/preferences": "^7.0.4",
+    "@capacitor/push-notifications": "^7.0.6",
+    "@capacitor/share": "^7.0.4",
+    "@capacitor/splash-screen": "^7.0.5",
+    "@capacitor/status-bar": "^7.0.6",
+    "date-fns": "^3.6.0",
+    "lucide-react": "^0.400.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "react-hot-toast": "^2.4.1",
-    "date-fns": "^3.6.0",
-    "lucide-react": "^0.400.0"
+    "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.6.4",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

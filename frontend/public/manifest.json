@@ -1,13 +1,41 @@
 {
-  "name": "Pelotitas",
+  "name": "Pelotitas — Padel y Tenis",
   "short_name": "Pelotitas",
-  "description": "El sistema operativo de tu juego — padel y tenis",
+  "description": "El sistema operativo de tu juego. Reservas, torneos, anotador en vivo y comunidad.",
+  "lang": "es-AR",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
   "background_color": "#0A0E14",
   "theme_color": "#0A0E14",
-  "orientation": "portrait-primary",
+  "categories": ["sports", "lifestyle", "social"],
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
-  ]
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mi historial",
+      "short_name": "Historial",
+      "description": "Anotá un partido",
+      "url": "/matches/log",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Anotador",
+      "short_name": "Anotador",
+      "description": "Llevá el marcador en vivo",
+      "url": "/scoreboards",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Reservar cancha",
+      "short_name": "Reservar",
+      "description": "Buscar complejos cerca",
+      "url": "/clubs",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "prefer_related_applications": false
 }
