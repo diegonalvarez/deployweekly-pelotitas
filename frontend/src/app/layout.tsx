@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import '@/styles/globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { LocationProvider } from '@/lib/location';
@@ -20,6 +20,13 @@ const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-mono',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-display',
 });
 
 export const metadata: Metadata = {
@@ -57,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`dark ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="es" className={`dark ${inter.variable} ${jetbrains.variable} ${spaceGrotesk.variable}`}>
       <head>
         {/* iOS — Add to Home Screen experience */}
         <link rel="apple-touch-icon" href="/icon.svg" />

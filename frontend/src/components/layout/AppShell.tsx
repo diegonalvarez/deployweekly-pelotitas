@@ -34,6 +34,13 @@ import {
   Sparkles,
   StickyNote,
 } from 'lucide-react';
+import {
+  CopaIcon,
+  RaquetaIcon,
+  CanchaIcon,
+  MarcadorIcon,
+  FuegoIcon,
+} from '@/components/icons/SportIcons';
 
 /* ─────────────────────────────────────────────────────────────
    Sidebar nav definition
@@ -47,8 +54,8 @@ const discoverGroup: NavGroup = {
   title: 'Descubrir',
   auth: 'public',
   items: [
-    { href: '/clubs',       label: 'Complejos',  icon: <Building2 className="w-4 h-4" /> },
-    { href: '/tournaments', label: 'Torneos',    icon: <Trophy className="w-4 h-4" /> },
+    { href: '/clubs',       label: 'Complejos',  icon: <CanchaIcon className="w-4 h-4" /> },
+    { href: '/tournaments', label: 'Torneos',    icon: <CopaIcon className="w-4 h-4" /> },
     { href: '/coaches',     label: 'Profesores', icon: <GraduationCap className="w-4 h-4" /> },
     { href: '/players',     label: 'Jugadores',  icon: <Users className="w-4 h-4" /> },
     { href: '/ranking',     label: 'Ranking',    icon: <BarChart3 className="w-4 h-4" /> },
@@ -63,10 +70,10 @@ const playerGroup: NavGroup = {
   items: [
     { href: '/dashboard/player', label: 'Inicio',       icon: <LayoutDashboard className="w-4 h-4" />, exact: true },
     { href: '/calendar',         label: 'Calendario',   icon: <CalendarCheck className="w-4 h-4" /> },
-    { href: '/reservations',     label: 'Reservas',     icon: <CalendarCheck className="w-4 h-4" /> },
-    { href: '/matches',          label: 'Partidos',     icon: <Swords className="w-4 h-4" /> },
+    { href: '/reservations',     label: 'Reservas',     icon: <CanchaIcon className="w-4 h-4" /> },
+    { href: '/matches',          label: 'Partidos',     icon: <RaquetaIcon className="w-4 h-4" /> },
     { href: '/matches/log',      label: 'Mi historial', icon: <StickyNote className="w-4 h-4" /> },
-    { href: '/scoreboards',      label: 'Anotadores',   icon: <Activity className="w-4 h-4" /> },
+    { href: '/scoreboards',      label: 'Anotadores',   icon: <MarcadorIcon className="w-4 h-4" /> },
     { href: '/available',        label: 'Disponibles',  icon: <Activity className="w-4 h-4" /> },
     { href: '/connections',      label: 'Conexiones',   icon: <Link2 className="w-4 h-4" /> },
   ],
@@ -77,16 +84,16 @@ const accountGroup: NavGroup = {
   title: 'Tu perfil',
   auth: 'private',
   items: [
-    { href: '/achievements', label: 'Logros',       icon: <Award className="w-4 h-4" /> },
+    { href: '/achievements', label: 'Logros',       icon: <FuegoIcon className="w-4 h-4" /> },
     { href: '/profile',      label: 'Perfil',       icon: <User className="w-4 h-4" /> },
     { href: '/billing',      label: 'Suscripción',  icon: <Sparkles className="w-4 h-4" /> },
   ],
 };
 
 const roleEntries: Record<string, NavItem> = {
-  CLUB_OWNER:           { href: '/dashboard/club',       label: 'Panel complejo',  icon: <Building2 className="w-4 h-4" /> },
+  CLUB_OWNER:           { href: '/dashboard/club',       label: 'Panel complejo',  icon: <CanchaIcon className="w-4 h-4" /> },
   COACH:                { href: '/dashboard/coach',       label: 'Panel profesor',  icon: <GraduationCap className="w-4 h-4" /> },
-  TOURNAMENT_ORGANIZER: { href: '/dashboard/organizer',   label: 'Panel organizador', icon: <Trophy className="w-4 h-4" /> },
+  TOURNAMENT_ORGANIZER: { href: '/dashboard/organizer',   label: 'Panel organizador', icon: <CopaIcon className="w-4 h-4" /> },
   ADMIN:                { href: '/dashboard/admin',       label: 'Panel admin',     icon: <Shield className="w-4 h-4" /> },
 };
 
@@ -94,7 +101,7 @@ const roleLabel: Record<string, { label: string; icon: React.ReactNode }> = {
   PLAYER:               { label: 'Jugador',     icon: <Gamepad2 className="w-3.5 h-3.5" /> },
   COACH:                { label: 'Profesor',    icon: <GraduationCap className="w-3.5 h-3.5" /> },
   CLUB_OWNER:           { label: 'Complejo',    icon: <Building2 className="w-3.5 h-3.5" /> },
-  TOURNAMENT_ORGANIZER: { label: 'Organizador', icon: <Trophy className="w-3.5 h-3.5" /> },
+  TOURNAMENT_ORGANIZER: { label: 'Organizador', icon: <CopaIcon className="w-3.5 h-3.5" /> },
   ADMIN:                { label: 'Admin',       icon: <Shield className="w-3.5 h-3.5" /> },
 };
 

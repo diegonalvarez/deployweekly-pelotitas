@@ -57,14 +57,14 @@ module.exports = {
 
       fontFamily: {
         sans: [
-          'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto',
+          'var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto',
           'Helvetica Neue', 'Arial', 'sans-serif',
         ],
         display: [
-          'Inter', 'system-ui', '-apple-system', 'sans-serif',
+          'var(--font-display)', 'Space Grotesk', 'Inter', 'system-ui', '-apple-system', 'sans-serif',
         ],
         mono: [
-          'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo',
+          'var(--font-mono)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo',
           'Monaco', 'Consolas', 'monospace',
         ],
       },
@@ -220,6 +220,12 @@ module.exports = {
         'gradient-dark':         'linear-gradient(180deg, #11161F 0%, #0A0E14 100%)',
         'gradient-mesh':         'radial-gradient(at 20% 0%, rgba(212,255,63,0.06) 0%, transparent 50%), radial-gradient(at 80% 100%, rgba(107,169,255,0.05) 0%, transparent 50%), radial-gradient(at 50% 50%, rgba(255,92,43,0.03) 0%, transparent 60%)',
         'court-grid':            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 0h1v40H0zM0 0h40v1H0z' fill='%231E2532'/%3E%3C/svg%3E\")",
+        /* Clay court — granular dotted texture, warm orange */
+        'clay-texture':          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23FF5C2B' fill-opacity='0.18'/%3E%3Ccircle cx='5' cy='3' r='0.5' fill='%23FF5C2B' fill-opacity='0.12'/%3E%3Ccircle cx='3' cy='6' r='0.4' fill='%23FF5C2B' fill-opacity='0.15'/%3E%3C/svg%3E\")",
+        /* Padel glass — perforated dot grid, cool sky */
+        'padel-texture':         "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='2' cy='2' r='1' fill='%236BA9FF' fill-opacity='0.08' stroke='%236BA9FF' stroke-opacity='0.18' stroke-width='0.4'/%3E%3C/svg%3E\")",
+        /* Court lines — white pinstripes for hero hero */
+        'court-lines':           "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-opacity='0.06' stroke-width='1.2'%3E%3Crect x='20' y='20' width='160' height='160'/%3E%3Cline x1='20' y1='100' x2='180' y2='100'/%3E%3Cline x1='100' y1='20' x2='100' y2='180'/%3E%3Cline x1='60' y1='20' x2='60' y2='180' stroke-dasharray='2 4'/%3E%3Cline x1='140' y1='20' x2='140' y2='180' stroke-dasharray='2 4'/%3E%3C/g%3E%3C/svg%3E\")",
       },
 
       spacing: {
