@@ -76,6 +76,16 @@ type ByMatchResponse = {
 
 const POINT_LABEL = ['0', '15', '30', '40'];
 
+/** Split a doubles label like "Diego / Juan" into two names; single names return [name, null]. */
+function splitDoubles(label?: string | null): [string, string | null] {
+  if (!label) return ['', null];
+  const parts = label.split(/\s*\/\s*/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return [parts[0].trim(), parts.slice(1).join(' / ').trim()];
+  }
+  return [label.trim(), null];
+}
+
 export default function ScoreboardPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -457,7 +467,7 @@ function SideRow({
         isWinner ? 'bg-brand/5' : ''
       }`}
     >
-      {/* Server dot + name */}
+      {/* Server dot + name(s) */}
       <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
         <span
           className={`relative flex w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 transition-opacity ${
@@ -475,15 +485,41 @@ function SideRow({
           />
         </span>
         <div className="min-w-0">
-          <p
-            className={`font-display font-semibold truncate text-xl sm:text-3xl tracking-tight-2 leading-none ${
-              isWinner ? 'text-brand' : 'text-text-primary'
-            }`}
-          >
-            {label || (isHome ? 'Local' : 'Visitante')}
-          </p>
+          {(() => {
+            const [a, b] = splitDoubles(label);
+            const fallback = isHome ? 'Local' : 'Visitante';
+            if (b) {
+              return (
+                <>
+                  <p
+                    className={`font-display font-semibold truncate text-lg sm:text-2xl tracking-tight-2 leading-tight ${
+                      isWinner ? 'text-brand' : 'text-text-primary'
+                    }`}
+                  >
+                    {a}
+                  </p>
+                  <p
+                    className={`font-display font-medium truncate text-base sm:text-xl tracking-tight-2 leading-tight ${
+                      isWinner ? 'text-brand/80' : 'text-text-secondary'
+                    }`}
+                  >
+                    {b}
+                  </p>
+                </>
+              );
+            }
+            return (
+              <p
+                className={`font-display font-semibold truncate text-xl sm:text-3xl tracking-tight-2 leading-none ${
+                  isWinner ? 'text-brand' : 'text-text-primary'
+                }`}
+              >
+                {a || fallback}
+              </p>
+            );
+          })()}
           <p className="font-mono text-2xs uppercase text-text-muted tracking-widest mt-1.5 sm:mt-2">
-            {isHome ? 'Equipo A' : 'Equipo B'}
+            {splitDoubles(label)[1] ? 'Pareja' : isHome ? 'Equipo A' : 'Equipo B'}
             {isWinner && <span className="ml-2 text-brand font-semibold">· Ganador</span>}
             {isServing && isLive && <span className="ml-2 text-text-secondary">· Sacando</span>}
           </p>
@@ -1066,12 +1102,36 @@ function CourtSide({
               boxShadow: isServing && isLive ? `0 0 16px ${accentColor}99` : undefined,
             }}
           />
-          <p
-            className="font-display font-semibold tracking-tight-2 text-3xl sm:text-5xl leading-none truncate"
-            style={{ color: isWinner ? '#D4FF3F' : '#F4F6FB' }}
-          >
-            {label || (isHome ? 'Local' : 'Visitante')}
-          </p>
+          {(() => {
+            const [a, b] = splitDoubles(label);
+            const fallback = isHome ? 'Local' : 'Visitante';
+            if (b) {
+              return (
+                <div className="min-w-0">
+                  <p
+                    className="font-display font-semibold tracking-tight-2 text-2xl sm:text-4xl leading-tight truncate"
+                    style={{ color: isWinner ? '#D4FF3F' : '#F4F6FB' }}
+                  >
+                    {a}
+                  </p>
+                  <p
+                    className="font-display font-medium tracking-tight-2 text-xl sm:text-3xl leading-tight truncate"
+                    style={{ color: isWinner ? '#D4FF3F' : '#94A0B5' }}
+                  >
+                    {b}
+                  </p>
+                </div>
+              );
+            }
+            return (
+              <p
+                className="font-display font-semibold tracking-tight-2 text-3xl sm:text-5xl leading-none truncate"
+                style={{ color: isWinner ? '#D4FF3F' : '#F4F6FB' }}
+              >
+                {a || fallback}
+              </p>
+            );
+          })()}
         </div>
 
         {/* Set ladder */}
