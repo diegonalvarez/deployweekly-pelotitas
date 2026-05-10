@@ -22,6 +22,8 @@ import {
   Sparkles,
   Activity,
   ChevronDown,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 
 type Side = 'HOME' | 'AWAY';
@@ -85,6 +87,7 @@ export default function ScoreboardPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
+  const [courtMode, setCourtMode] = useState(false);
 
   const isOwner = !!(user && sb && sb.ownerId === user.id);
   const canEdit = isOwner && sb?.status !== 'COMPLETED';
@@ -224,6 +227,14 @@ export default function ScoreboardPage() {
                 }
               </button>
             )}
+            <button
+              onClick={() => setCourtMode(true)}
+              className="btn-secondary text-xs h-9"
+              aria-label="Modo cancha"
+              title="Modo Cancha — fullscreen para anotar al lado de la cancha"
+            >
+              <Maximize className="w-3.5 h-3.5" /> Modo Cancha
+            </button>
             <button onClick={() => setShowAudit(!showAudit)} className="btn-icon" aria-label="Auditoría">
               <History className="w-4 h-4" />
             </button>
@@ -317,47 +328,109 @@ export default function ScoreboardPage() {
         {/* Notes */}
         <NotesCard sb={sb} canEdit={canEdit} onUpdate={(u) => setSb(u)} />
       </div>
+
+      {/* Court mode — fullscreen anotador for cancha-side use */}
+      {courtMode && (
+        <CourtMode
+          sb={sb}
+          canEdit={canEdit}
+          busy={busy}
+          onPoint={awardPoint}
+          onUndo={undo}
+          onExit={() => setCourtMode(false)}
+        />
+      )}
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Display
+   Display — stadium scoreboard hero
+   Brutal mono digits, court-line backdrop, Wimbledon header.
    ───────────────────────────────────────────────────────────── */
 function ScoreboardDisplay({ sb }: { sb: Scoreboard }) {
   const setsRow = (sb.homeSetGames || []).map((_, i) => i);
+  const sportAccent = sb.sport === 'PADEL' ? 'sky' : 'clay';
+
   return (
-    <div className="p-5 sm:p-7">
-      {/* Top: settings summary */}
-      <div className="flex items-center gap-3 flex-wrap mb-5">
-        <span className="text-2xs uppercase font-semibold text-text-muted tracking-widest" style={{ letterSpacing: '0.1em' }}>
-          Set {sb.currentSet}/{sb.totalSets}
+    <div className="relative bg-court-lines">
+      {/* Subtle radial glow on the side that's serving */}
+      <div
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${
+          sb.status === 'IN_PROGRESS' ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          background:
+            sb.servingSide === 'HOME'
+              ? 'radial-gradient(at 50% 20%, rgba(212,255,63,0.08), transparent 55%)'
+              : 'radial-gradient(at 50% 80%, rgba(107,169,255,0.08), transparent 55%)',
+        }}
+      />
+
+      {/* Stadium top strip — Wimbledon-y eyebrow */}
+      <div className="relative z-10 border-b border-border-dark/60 px-5 sm:px-7 py-3 flex items-center gap-3 flex-wrap">
+        <span className="font-mono text-2xs uppercase font-semibold text-text-secondary tracking-[0.18em]">
+          Set {sb.currentSet} / {sb.totalSets}
         </span>
-        <span className="text-2xs text-text-muted">·</span>
-        <span className="text-2xs text-text-secondary">
-          {sb.scoringMode === 'GOLDEN_POINT' ? 'Punto de oro' : 'Deuce / ventaja'}
+        <span className="text-text-muted/40">·</span>
+        <span className="font-mono text-2xs uppercase text-text-muted tracking-widest">
+          {sb.scoringMode === 'GOLDEN_POINT' ? 'Golden point' : 'Deuce'}
         </span>
         {sb.superTieBreak && (
           <>
-            <span className="text-2xs text-text-muted">·</span>
-            <span className="text-2xs text-text-secondary">Super tiebreak</span>
+            <span className="text-text-muted/40">·</span>
+            <span className="font-mono text-2xs uppercase text-text-muted tracking-widest">Super TB</span>
           </>
         )}
-        {sb.inTieBreak && <span className="badge-yellow">Tie-break</span>}
-        {sb.inSuperTieBreak && <span className="badge-yellow">Super tie-break</span>}
+        {sb.inTieBreak && (
+          <span className="font-mono text-2xs uppercase text-warning tracking-widest font-semibold animate-pulse">
+            ▸ Tie-break
+          </span>
+        )}
+        {sb.inSuperTieBreak && (
+          <span className="font-mono text-2xs uppercase text-warning tracking-widest font-semibold animate-pulse">
+            ▸ Super tie-break
+          </span>
+        )}
+
+        {/* Set ladder header — small column titles like a real stadium board */}
+        <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+          {setsRow.map((i) => (
+            <div
+              key={i}
+              className={`w-7 sm:w-9 text-center font-mono text-2xs uppercase tracking-widest ${
+                i === sb.currentSet - 1 ? 'text-brand' : 'text-text-muted'
+              }`}
+            >
+              S{i + 1}
+            </div>
+          ))}
+          <div className="w-16 sm:w-24 text-center font-mono text-2xs uppercase tracking-widest text-text-muted">
+            Pts
+          </div>
+        </div>
       </div>
 
-      {/* Names + points + sets */}
-      <div className="space-y-2">
-        <SideRow side="HOME" sb={sb} setsRow={setsRow} />
-        <div className="court-line my-3" />
-        <SideRow side="AWAY" sb={sb} setsRow={setsRow} />
+      {/* Two giant rows */}
+      <div className="relative z-10 divide-y divide-border-dark/60">
+        <SideRow side="HOME" sb={sb} setsRow={setsRow} sportAccent={sportAccent} />
+        <SideRow side="AWAY" sb={sb} setsRow={setsRow} sportAccent={sportAccent} />
       </div>
     </div>
   );
 }
 
-function SideRow({ side, sb, setsRow }: { side: Side; sb: Scoreboard; setsRow: number[] }) {
+function SideRow({
+  side,
+  sb,
+  setsRow,
+  sportAccent,
+}: {
+  side: Side;
+  sb: Scoreboard;
+  setsRow: number[];
+  sportAccent: 'sky' | 'clay';
+}) {
   const isHome = side === 'HOME';
   const label = isHome ? sb.homeLabel : sb.awayLabel;
   const isServing = sb.servingSide === side;
@@ -366,32 +439,59 @@ function SideRow({ side, sb, setsRow }: { side: Side; sb: Scoreboard; setsRow: n
   const advantage = isHome ? sb.homeAdvantage : sb.awayAdvantage;
   const tbPoints = isHome ? sb.homeTbPoints : sb.awayTbPoints;
   const isWinner = sb.winner === side;
+  const isLive = sb.status === 'IN_PROGRESS';
 
-  // Show 0/15/30/40 or "Adv" or tiebreak count
   const pointDisplay = (() => {
     if (sb.inTieBreak || sb.inSuperTieBreak) return String(tbPoints);
-    if (advantage) return 'Adv';
+    if (advantage) return 'AD';
     return POINT_LABEL[points] || String(points);
   })();
 
+  // Sport-aware serving accent (padel sky, tennis clay) — loser still desat
+  const serveColor = sportAccent === 'sky' ? 'bg-sky' : 'bg-clay';
+  const serveGlow = sportAccent === 'sky' ? 'rgba(107,169,255,0.6)' : 'rgba(255,92,43,0.6)';
+
   return (
-    <div className={`flex items-center gap-3 sm:gap-5 ${isWinner ? 'opacity-100' : ''}`}>
-      {/* Server indicator + name */}
-      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-        <span className={`relative flex w-2 h-2 shrink-0 ${isServing && sb.status === 'IN_PROGRESS' ? '' : 'opacity-30'}`}>
-          {isServing && sb.status === 'IN_PROGRESS' && (
-            <span className="absolute inset-0 rounded-full bg-brand animate-ping opacity-60" />
+    <div
+      className={`px-5 sm:px-7 py-5 sm:py-7 flex items-center gap-4 sm:gap-6 transition-colors ${
+        isWinner ? 'bg-brand/5' : ''
+      }`}
+    >
+      {/* Server dot + name */}
+      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+        <span
+          className={`relative flex w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 transition-opacity ${
+            isServing && isLive ? 'opacity-100' : 'opacity-15'
+          }`}
+        >
+          {isServing && isLive && (
+            <span
+              className={`absolute inset-0 rounded-full ${serveColor} animate-ping opacity-50`}
+            />
           )}
-          <span className="relative w-2 h-2 rounded-full bg-brand" />
+          <span
+            className={`relative w-full h-full rounded-full ${serveColor}`}
+            style={isServing && isLive ? { boxShadow: `0 0 14px ${serveGlow}` } : undefined}
+          />
         </span>
-        <p className={`text-base sm:text-lg font-semibold truncate ${isWinner ? 'text-brand' : 'text-text-primary'}`}>
-          {label}
-          {isWinner && <span className="ml-2 text-2xs text-brand font-mono uppercase">winner</span>}
-        </p>
+        <div className="min-w-0">
+          <p
+            className={`font-display font-semibold truncate text-xl sm:text-3xl tracking-tight-2 leading-none ${
+              isWinner ? 'text-brand' : 'text-text-primary'
+            }`}
+          >
+            {label || (isHome ? 'Local' : 'Visitante')}
+          </p>
+          <p className="font-mono text-2xs uppercase text-text-muted tracking-widest mt-1.5 sm:mt-2">
+            {isHome ? 'Equipo A' : 'Equipo B'}
+            {isWinner && <span className="ml-2 text-brand font-semibold">· Ganador</span>}
+            {isServing && isLive && <span className="ml-2 text-text-secondary">· Sacando</span>}
+          </p>
+        </div>
       </div>
 
-      {/* Set scores */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      {/* Set ladder — mini stadium bulbs */}
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
         {setsRow.map((i) => {
           const isCurrent = i === sb.currentSet - 1;
           const games = setGames[i] ?? 0;
@@ -400,9 +500,9 @@ function SideRow({ side, sb, setsRow }: { side: Side; sb: Scoreboard; setsRow: n
           return (
             <div
               key={i}
-              className={`tabular w-8 sm:w-10 text-center text-2xl sm:text-3xl font-bold tracking-tight-2 rounded-md py-1 ${
+              className={`score-digit w-7 sm:w-9 text-center text-2xl sm:text-4xl py-0.5 ${
                 isCurrent
-                  ? 'bg-brand/10 text-brand border border-brand/30'
+                  ? 'text-brand'
                   : isSetWinner
                     ? 'text-text-primary'
                     : 'text-text-muted'
@@ -414,11 +514,23 @@ function SideRow({ side, sb, setsRow }: { side: Side; sb: Scoreboard; setsRow: n
         })}
       </div>
 
-      {/* Live points */}
-      <div className={`tabular w-16 sm:w-24 text-center text-3xl sm:text-5xl font-bold tracking-tightest rounded-lg px-2 py-2 shrink-0 ${
-        sb.status === 'IN_PROGRESS' ? 'bg-text-primary/5 text-text-primary' : 'text-text-muted'
-      }`}>
-        {pointDisplay}
+      {/* BIG live points — the hero number */}
+      <div
+        className={`shrink-0 w-16 sm:w-24 text-center transition-opacity ${
+          isLive ? 'opacity-100' : 'opacity-50'
+        }`}
+      >
+        <span
+          className={`score-digit inline-block ${
+            advantage ? 'text-warning' : isLive ? 'text-text-primary' : 'text-text-muted'
+          }`}
+          style={{
+            fontSize: 'clamp(56px, 11vw, 132px)',
+            textShadow: isLive ? '0 4px 32px rgba(0,0,0,0.45)' : undefined,
+          }}
+        >
+          {pointDisplay}
+        </span>
       </div>
     </div>
   );
@@ -763,5 +875,261 @@ function NotesCard({
         </div>
       )}
     </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Court mode — fullscreen anotador for cancha-side use.
+   Big tap zones (top half = HOME, bottom half = AWAY), screen
+   wake lock, body scroll lock. Tap anywhere on a half = +punto.
+   ───────────────────────────────────────────────────────────── */
+function CourtMode({
+  sb,
+  canEdit,
+  busy,
+  onPoint,
+  onUndo,
+  onExit,
+}: {
+  sb: Scoreboard;
+  canEdit: boolean;
+  busy: string | null;
+  onPoint: (side: Side) => void;
+  onUndo: () => void;
+  onExit: () => void;
+}) {
+  // Lock body scroll while in court mode
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Acquire wake lock so the screen doesn't sleep on the bench
+    let wakeLock: any = null;
+    const lock = async () => {
+      try {
+        // @ts-ignore — wakeLock not in older lib types
+        if (navigator.wakeLock?.request) {
+          // @ts-ignore
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch {
+        /* permission denied or not supported, no-op */
+      }
+    };
+    lock();
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      if (wakeLock) {
+        try { wakeLock.release(); } catch { /* */ }
+      }
+    };
+  }, []);
+
+  // Re-acquire wake lock if user switches tabs and comes back
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        // @ts-ignore
+        navigator.wakeLock?.request?.('screen').catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  const setsRow = (sb.homeSetGames || []).map((_, i) => i);
+  const isLive = sb.status === 'IN_PROGRESS';
+
+  const pointStr = (side: Side) => {
+    if (sb.inTieBreak || sb.inSuperTieBreak) {
+      return String(side === 'HOME' ? sb.homeTbPoints : sb.awayTbPoints);
+    }
+    if (side === 'HOME' && sb.homeAdvantage) return 'AD';
+    if (side === 'AWAY' && sb.awayAdvantage) return 'AD';
+    return POINT_LABEL[side === 'HOME' ? sb.homePoints : sb.awayPoints];
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-base bg-court-lines tap-none flex flex-col"
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      {/* Top utility bar — minimal, doesn't compete with score */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 pt-safe">
+        <button onClick={onExit} className="btn-icon" aria-label="Salir modo cancha">
+          <Minimize className="w-4 h-4" />
+        </button>
+        <div className="font-mono text-2xs uppercase tracking-[0.2em] text-text-muted">
+          Set {sb.currentSet}/{sb.totalSets}
+          {sb.inTieBreak && <span className="ml-2 text-warning">· TB</span>}
+          {sb.inSuperTieBreak && <span className="ml-2 text-warning">· STB</span>}
+        </div>
+        <button
+          onClick={onUndo}
+          disabled={!canEdit || busy === 'undo'}
+          className="btn-icon disabled:opacity-30"
+          aria-label="Deshacer"
+        >
+          {busy === 'undo' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Undo2 className="w-4 h-4" />}
+        </button>
+      </div>
+
+      {/* Two huge tap zones */}
+      <CourtSide
+        side="HOME"
+        sb={sb}
+        setsRow={setsRow}
+        canEdit={canEdit}
+        busy={busy}
+        isLive={isLive}
+        pointStr={pointStr('HOME')}
+        onTap={() => canEdit && !busy && onPoint('HOME')}
+        accent="brand"
+      />
+      <div className="h-px bg-border-default/40 relative">
+        <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-2 bg-base font-mono text-2xs uppercase tracking-[0.25em] text-text-muted">
+          ↑ HOME · AWAY ↓
+        </span>
+      </div>
+      <CourtSide
+        side="AWAY"
+        sb={sb}
+        setsRow={setsRow}
+        canEdit={canEdit}
+        busy={busy}
+        isLive={isLive}
+        pointStr={pointStr('AWAY')}
+        onTap={() => canEdit && !busy && onPoint('AWAY')}
+        accent="sky"
+      />
+    </div>
+  );
+}
+
+function CourtSide({
+  side,
+  sb,
+  setsRow,
+  canEdit,
+  busy,
+  isLive,
+  pointStr,
+  onTap,
+  accent,
+}: {
+  side: Side;
+  sb: Scoreboard;
+  setsRow: number[];
+  canEdit: boolean;
+  busy: string | null;
+  isLive: boolean;
+  pointStr: string;
+  onTap: () => void;
+  accent: 'brand' | 'sky';
+}) {
+  const isHome = side === 'HOME';
+  const label = isHome ? sb.homeLabel : sb.awayLabel;
+  const setGames = isHome ? sb.homeSetGames : sb.awaySetGames;
+  const isServing = sb.servingSide === side;
+  const isWinner = sb.winner === side;
+  const flipped = side === 'AWAY'; // bottom half mirrors so the cancha-side player reads upright
+  const accentColor = accent === 'brand' ? '#D4FF3F' : '#6BA9FF';
+  const isBusy = busy === `point-${side}`;
+
+  return (
+    <button
+      onClick={onTap}
+      disabled={!canEdit || !!busy}
+      className="relative flex-1 flex items-center justify-between px-6 sm:px-12 active:bg-white/[0.03] disabled:opacity-90 disabled:cursor-not-allowed transition-colors w-full text-left overflow-hidden"
+      style={{ transform: flipped ? 'rotate(180deg)' : undefined }}
+      aria-label={`Sumar punto a ${label || side}`}
+    >
+      {/* Subtle glow when serving */}
+      {isServing && isLive && (
+        <span
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(at 50% 50%, ${accentColor}1A, transparent 60%)`,
+          }}
+        />
+      )}
+
+      {/* Left block — name + sets */}
+      <div className="relative flex flex-col gap-3 sm:gap-4 z-10">
+        <div className="flex items-center gap-3">
+          <span
+            className="w-3 h-3 rounded-full transition-opacity"
+            style={{
+              background: accentColor,
+              opacity: isServing && isLive ? 1 : 0.18,
+              boxShadow: isServing && isLive ? `0 0 16px ${accentColor}99` : undefined,
+            }}
+          />
+          <p
+            className="font-display font-semibold tracking-tight-2 text-3xl sm:text-5xl leading-none truncate"
+            style={{ color: isWinner ? '#D4FF3F' : '#F4F6FB' }}
+          >
+            {label || (isHome ? 'Local' : 'Visitante')}
+          </p>
+        </div>
+
+        {/* Set ladder */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {setsRow.map((i) => {
+            const isCurrent = i === sb.currentSet - 1;
+            const games = setGames[i] ?? 0;
+            const otherGames = (isHome ? sb.awaySetGames[i] : sb.homeSetGames[i]) ?? 0;
+            const isSetWinner = !isCurrent && games > otherGames;
+            return (
+              <div key={i} className="flex flex-col items-center">
+                <span className="font-mono text-2xs uppercase tracking-widest text-text-muted">
+                  S{i + 1}
+                </span>
+                <span
+                  className="score-digit text-3xl sm:text-5xl"
+                  style={{
+                    color: isCurrent ? accentColor : isSetWinner ? '#F4F6FB' : '#5A6478',
+                  }}
+                >
+                  {games}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Right block — the BIG point digit */}
+      <div className="relative z-10 shrink-0 ml-4">
+        {isBusy ? (
+          <Loader2 className="w-16 h-16 animate-spin" style={{ color: accentColor }} />
+        ) : (
+          <span
+            className="score-digit"
+            style={{
+              fontSize: 'clamp(120px, 28vw, 320px)',
+              color: pointStr === 'AD' ? '#FFB547' : isLive ? accentColor : '#5A6478',
+              textShadow: isLive ? `0 8px 64px ${accentColor}55` : undefined,
+            }}
+          >
+            {pointStr}
+          </span>
+        )}
+      </div>
+
+      {/* Tap hint at bottom — only when live */}
+      {isLive && canEdit && (
+        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-2xs uppercase tracking-[0.25em] text-text-muted/60 z-10">
+          Tap para sumar
+        </span>
+      )}
+
+      {!isLive && (
+        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-2xs uppercase tracking-widest text-text-muted/50 z-10">
+          {sb.status === 'COMPLETED' ? 'Finalizado' : 'Pausado'}
+        </span>
+      )}
+    </button>
   );
 }
