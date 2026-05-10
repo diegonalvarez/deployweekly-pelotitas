@@ -4,3 +4,10 @@ dist/
 .env
 *.log
 .DS_Store
+*.tsbuildinfo
+
+# Capacitor build artifacts
+frontend/ios/App/Pods/
+frontend/ios/App/build/
+frontend/ios/App/DerivedData/
+frontend/android/
