@@ -235,6 +235,81 @@ export class MatchLogService {
     });
   }
 
+  /* ─── RIVALRIES ────────────────────────────────────────────
+   * Computes "rivalries" at runtime: any registered opponent with whom
+   * the user has at least `threshold` matches logged. Includes record
+   * (won/lost/drew) from the user's perspective and last meet date.
+   * No schema change required.
+   * ──────────────────────────────────────────────────────── */
+  async myRivalries(userId: string, threshold = 3) {
+    const entries = await this.prisma.matchLogEntry.findMany({
+      where: {
+        ownerId: userId,
+        participants: { some: { side: MatchLogSide.OPPONENT, userId: { not: null } } },
+      },
+      select: {
+        id: true,
+        date: true,
+        result: true,
+        sport: true,
+        participants: {
+          where: { side: MatchLogSide.OPPONENT, userId: { not: null } },
+          select: {
+            userId: true,
+            user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    type Bucket = {
+      user: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
+      won: number;
+      lost: number;
+      draw: number;
+      total: number;
+      lastMeet: Date;
+      sports: Set<string>;
+    };
+    const byOpponent = new Map<string, Bucket>();
+
+    for (const e of entries) {
+      for (const p of e.participants) {
+        if (!p.userId || !p.user) continue;
+        const key = p.userId;
+        const existing = byOpponent.get(key) ?? {
+          user: p.user,
+          won: 0, lost: 0, draw: 0, total: 0,
+          lastMeet: e.date,
+          sports: new Set<string>(),
+        };
+        existing.total += 1;
+        existing.sports.add(e.sport);
+        if (e.result === 'WON') existing.won += 1;
+        else if (e.result === 'LOST') existing.lost += 1;
+        else if (e.result === 'DRAW') existing.draw += 1;
+        // entries are ordered desc — first time we see a key is the most recent
+        if (e.date > existing.lastMeet) existing.lastMeet = e.date;
+        byOpponent.set(key, existing);
+      }
+    }
+
+    return Array.from(byOpponent.values())
+      .filter((r) => r.total >= threshold)
+      .sort((a, b) => b.total - a.total || +new Date(b.lastMeet) - +new Date(a.lastMeet))
+      .map((r) => ({
+        opponent: r.user,
+        total: r.total,
+        won: r.won,
+        lost: r.lost,
+        draw: r.draw,
+        lastMeet: r.lastMeet,
+        sports: Array.from(r.sports),
+        winRate: r.total > 0 ? Math.round((r.won / r.total) * 100) : 0,
+      }));
+  }
+
   async claimPhantomMentions(userId: string, participantIds: string[]) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

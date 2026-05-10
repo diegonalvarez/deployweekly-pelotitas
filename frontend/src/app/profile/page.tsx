@@ -6,6 +6,7 @@ import { formatDateTime } from '@/lib/date';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PhantomClaimBanner from '@/components/PhantomClaimBanner';
+import RivalriesWidget from '@/components/RivalriesWidget';
 
 interface TimelineActivity {
   id: string;
@@ -190,6 +191,11 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {/* Rivalries (auto-detected from match-log) */}
+        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
+          <RivalriesWidget />
+        </div>
 
         {/* Timeline */}
         <div className="card-elevated mt-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
