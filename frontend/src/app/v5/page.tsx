@@ -3,6 +3,37 @@
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Play, ChevronLeft, ChevronRight, Plus, Menu } from 'lucide-react';
 
+/* Real photos via Unsplash — fall back to a colored block on error.
+   Each url includes auto-format/quality/sizing params. */
+const PHOTO = {
+  heroBg:        'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?auto=format&fit=crop&w=1200&q=80', // padel/tennis court
+  cardGrass:     'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=900&q=80',     // tennis ball on grass
+  cardPlayer:    'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80',  // athlete running
+  cardRacket:    'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=900&q=80',  // racket / padel
+  olgaBig:       'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1400&q=85', // orange sneakers court
+  olgaSide:      'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=900&q=85',     // tennis arm racket
+};
+
+function Photo({
+  src, alt, fallback, className = '', style,
+}: {
+  src: string; alt: string; fallback: string; className?: string; style?: React.CSSProperties;
+}) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      style={{ background: fallback, ...style }}
+      loading="lazy"
+      onError={(e) => {
+        // hide the broken image, keep the fallback color
+        (e.currentTarget as HTMLImageElement).style.opacity = '0';
+      }}
+    />
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────
    LANDING E v2 — Flonea + Olga inspired.
    White outer page → deep-brown hero card with rounded notch
@@ -207,46 +238,19 @@ function VideoSlot() {
       className="relative h-full min-h-[420px] rounded-[24px] overflow-hidden flex items-end justify-center"
       style={{ background: 'linear-gradient(180deg, #6B3922 0%, #2A1408 100%)' }}
     >
-      {/* Court silhouette / stadium illustration */}
-      <svg viewBox="0 0 400 600" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <radialGradient id="court-glow" cx="50%" cy="60%" r="55%">
-            <stop offset="0%"  stopColor={YELLOW} stopOpacity="0.18" />
-            <stop offset="100%" stopColor={BROWN2} stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="400" height="600" fill="url(#court-glow)" />
-        {/* Padel court */}
-        <g stroke={CREAM} strokeWidth="1.5" fill="none" opacity="0.22">
-          <rect x="80" y="200" width="240" height="280" rx="4" />
-          <line x1="80" y1="340" x2="320" y2="340" />
-          <line x1="200" y1="200" x2="200" y2="480" strokeDasharray="3 6" />
-          <rect x="40" y="200" width="40" height="280" />
-          <rect x="320" y="200" width="40" height="280" />
-        </g>
-        {/* Player silhouette */}
-        <g opacity="0.85">
-          <circle cx="200" cy="260" r="22" fill={CREAM} opacity="0.92" />
-          <path d="M180 280 L220 280 L235 380 L210 460 L200 460 L195 380 L165 380 L180 280 Z" fill={CREAM} opacity="0.92" />
-          <path d="M195 380 L165 380 L175 460 L185 460 L195 410 Z" fill={CREAM} opacity="0.92" />
-          {/* Racket */}
-          <ellipse cx="265" cy="240" rx="22" ry="28" fill="none" stroke={CREAM} strokeWidth="3" />
-          <line x1="245" y1="252" x2="220" y2="278" stroke={CREAM} strokeWidth="3" strokeLinecap="round" />
-          {/* Strings */}
-          <g stroke={CREAM} strokeWidth="0.8" opacity="0.6">
-            <line x1="248" y1="220" x2="282" y2="220" />
-            <line x1="246" y1="232" x2="284" y2="232" />
-            <line x1="246" y1="244" x2="284" y2="244" />
-            <line x1="248" y1="256" x2="282" y2="256" />
-            <line x1="258" y1="214" x2="258" y2="262" />
-            <line x1="267" y1="212" x2="267" y2="264" />
-            <line x1="276" y1="214" x2="276" y2="262" />
-          </g>
-        </g>
-        {/* Tennis ball */}
-        <circle cx="290" cy="200" r="14" fill={YELLOW} />
-        <path d="M278 196 Q290 188 302 196 M278 204 Q290 212 302 204" fill="none" stroke={INK} strokeWidth="1.2" opacity="0.65" />
-      </svg>
+      <Photo
+        src={PHOTO.heroBg}
+        alt="Cancha de padel"
+        fallback="#3B1F0F"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ filter: 'brightness(0.62) saturate(1.05)' }}
+      />
+      {/* Vignette over photo to keep CTA legible */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, rgba(59,31,15,0.0) 30%, rgba(26,18,8,0.85) 100%)' }}
+      />
 
       {/* Centered play button */}
       <button
@@ -454,80 +458,56 @@ function ProductCard({ theme, eyebrow, title, stat, statLabel, art }: {
 }
 
 function CardArt({ kind, theme }: { kind: 'grass' | 'player' | 'racket'; theme: { bg: string; ink: string; accent: string } }) {
-  if (kind === 'grass') {
-    return (
-      <svg viewBox="0 0 320 130" className="w-full h-32 sm:h-36">
-        <rect width="320" height="130" fill={theme.bg} />
-        {/* Grass blades */}
-        <g fill={theme.accent} opacity="0.9">
-          {Array.from({ length: 30 }).map((_, i) => (
-            <path key={i} d={`M${i * 11 + 4} 130 L${i * 11 + 8} 100 L${i * 11 + 12} 130 Z`} />
-          ))}
-        </g>
-        {/* Flag */}
-        <line x1="60" y1="40" x2="60" y2="120" stroke={theme.accent} strokeWidth="3" />
-        <polygon points="60,40 90,52 60,64" fill="#E04A3C" />
-        {/* Tennis ball on tee */}
-        <ellipse cx="220" cy="118" rx="14" ry="4" fill={INK} opacity="0.15" />
-        <circle cx="220" cy="104" r="13" fill="#FFFFFF" stroke={theme.accent} strokeWidth="1" />
-        <path d="M210 100 Q220 92 230 100 M210 108 Q220 116 230 108" fill="none" stroke={theme.accent} strokeWidth="1.2" />
-        <rect x="216" y="115" width="8" height="10" fill={theme.accent} />
-      </svg>
-    );
-  }
-  if (kind === 'player') {
-    return (
-      <svg viewBox="0 0 320 160" className="w-full h-36 sm:h-40">
-        <rect width="320" height="160" fill={theme.bg} />
-        {/* Grid background */}
-        <g stroke="#FFFFFF" strokeWidth="1" opacity="0.15">
-          {[40, 80, 120, 160, 200, 240, 280].map(x => <line key={x} x1={x} y1="0" x2={x} y2="160" />)}
-          {[40, 80, 120].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} />)}
-        </g>
-        {/* Player silhouette running with ball */}
-        <g fill={theme.ink}>
-          {/* head */}
-          <circle cx="170" cy="32" r="14" />
-          {/* helmet */}
-          <path d="M156 30 Q170 18 184 30 L184 38 L156 38 Z" fill={INK} />
-          {/* body */}
-          <path d="M152 48 L188 48 L196 100 L182 145 L172 145 L170 105 L158 105 L154 145 L144 145 Z" />
-          {/* arm holding ball */}
-          <path d="M192 60 L220 70 L226 78 L210 76 L196 70 Z" />
-          {/* ball (football-shape) */}
-          <ellipse cx="232" cy="78" rx="14" ry="9" fill="#7A2A20" stroke={theme.ink} strokeWidth="1.5" />
-          <line x1="225" y1="78" x2="239" y2="78" stroke={theme.ink} strokeWidth="1.2" />
-        </g>
-      </svg>
-    );
-  }
-  // racket
+  const src = kind === 'grass' ? PHOTO.cardGrass : kind === 'player' ? PHOTO.cardPlayer : PHOTO.cardRacket;
+  const alt = kind === 'grass' ? 'Tennis ball' : kind === 'player' ? 'Athlete running' : 'Racket close-up';
+
   return (
-    <svg viewBox="0 0 320 170" className="w-full h-36 sm:h-44">
-      <rect width="320" height="170" fill={theme.bg} />
-      {/* "SPORT" outline text behind racket */}
-      <text x="160" y="110" textAnchor="middle" fontFamily="Space Grotesk, sans-serif" fontWeight="800"
-            fontSize="84" fill="none" stroke={theme.accent} strokeWidth="1.5" letterSpacing="-3">
-        SPORT
-      </text>
-      {/* Racket */}
-      <g transform="translate(40, 30) rotate(-22 130 60)">
-        <ellipse cx="80" cy="50" rx="46" ry="56" fill="none" stroke={theme.ink} strokeWidth="3" />
-        <g stroke={theme.ink} strokeWidth="1" opacity="0.6">
-          {[44, 56, 68, 80, 92, 104, 116].map(x => <line key={x} x1={x} y1="0" x2={x} y2="100" />)}
-          {[14, 26, 38, 50, 62, 74, 86].map(y => <line key={y} x1="38" y1={y} x2="122" y2={y} />)}
-        </g>
-        <line x1="80" y1="106" x2="80" y2="160" stroke={theme.ink} strokeWidth="5" strokeLinecap="round" />
-        <rect x="74" y="156" width="12" height="22" rx="2" fill={theme.ink} />
-      </g>
-      {/* stickers */}
-      <g fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="10">
-        <rect x="10" y="100" width="76" height="20" rx="10" fill="#FFFFFF" />
-        <text x="48" y="113" textAnchor="middle" fill={theme.ink} letterSpacing="1.5">COMFORT</text>
-        <rect x="240" y="130" width="66" height="20" rx="10" fill="#FFFFFF" />
-        <text x="273" y="143" textAnchor="middle" fill={theme.ink} letterSpacing="1.5">STRONG</text>
-      </g>
-    </svg>
+    <div className="relative h-36 sm:h-44 overflow-hidden">
+      <Photo
+        src={src}
+        alt={alt}
+        fallback={theme.bg}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ mixBlendMode: kind === 'racket' ? 'multiply' : 'normal' }}
+      />
+      {/* tint */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: `${theme.bg}55`, mixBlendMode: 'multiply' }}
+      />
+      {/* outline text for racket */}
+      {kind === 'racket' && (
+        <span
+          aria-hidden
+          className="absolute left-2 bottom-1 font-bold uppercase pointer-events-none"
+          style={{
+            fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+            fontSize: 64,
+            letterSpacing: '-0.06em',
+            color: 'transparent',
+            WebkitTextStroke: `1.2px ${theme.ink}`,
+            opacity: 0.6,
+            lineHeight: 0.9,
+          }}
+        >
+          SPORT
+        </span>
+      )}
+      {/* stickers for racket */}
+      {kind === 'racket' && (
+        <>
+          <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
+                style={{ background: '#FFFFFF', color: theme.ink }}>
+            COMFORT
+          </span>
+          <span className="absolute bottom-2 right-2 text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
+                style={{ background: '#FFFFFF', color: theme.ink }}>
+            STRONG
+          </span>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -663,82 +643,39 @@ function OlgaSection() {
 }
 
 function BigImageMock() {
-  // Sky blue background with player silhouette legs + orange sneakers running
   return (
-    <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"  stopColor={SKY} />
-          <stop offset="100%" stopColor={BLUE} />
-        </linearGradient>
-      </defs>
-      <rect width="800" height="600" fill="url(#sky)" />
-      {/* Clouds */}
-      <g fill="#FFFFFF" opacity="0.75">
-        <ellipse cx="160" cy="120" rx="60" ry="22" />
-        <ellipse cx="220" cy="110" rx="50" ry="18" />
-        <ellipse cx="600" cy="180" rx="70" ry="20" />
-        <ellipse cx="660" cy="170" rx="50" ry="16" />
-      </g>
-      {/* Player legs (centered) */}
-      <g>
-        {/* shorts */}
-        <path d="M340 220 L460 220 L470 360 L420 360 L410 280 L380 280 L370 360 L320 360 Z" fill="#FFFFFF" />
-        {/* left leg */}
-        <path d="M320 360 L370 360 L380 540 L335 540 Z" fill="#F2D4B5" />
-        {/* right leg */}
-        <path d="M420 360 L470 360 L455 540 L410 540 Z" fill="#F2D4B5" />
-        {/* socks */}
-        <rect x="335" y="525" width="45" height="35" fill="#FFFFFF" />
-        <rect x="408" y="525" width="50" height="35" fill="#FFFFFF" />
-        {/* sneakers — orange */}
-        <path d="M325 555 L390 555 L395 580 L390 595 L320 595 Z" fill={ORANGE} />
-        <path d="M400 555 L470 555 L475 595 L405 595 L398 580 Z" fill={ORANGE} />
-        <path d="M325 575 L390 575" stroke="#FFFFFF" strokeWidth="3" />
-        <path d="M400 575 L475 575" stroke="#FFFFFF" strokeWidth="3" />
-        {/* arm holding racket */}
-        <path d="M510 200 L560 240 L585 295 L595 315 L575 320 L555 290 L500 240 Z" fill="#F2D4B5" />
-        <rect x="555" y="280" width="40" height="14" rx="4" fill="#FFFFFF" transform="rotate(34 575 287)" />
-      </g>
-      {/* Racket — top right */}
-      <g transform="translate(560 70) rotate(28)">
-        <ellipse cx="60" cy="80" rx="42" ry="56" fill="none" stroke="#FFFFFF" strokeWidth="6" />
-        <g stroke="#FFFFFF" strokeWidth="1.2" opacity="0.7">
-          {[24, 36, 48, 60, 72, 84, 96].map(x => <line key={x} x1={x} y1="30" x2={x} y2="130" />)}
-          {[36, 48, 60, 72, 84, 96, 108, 120].map(y => <line key={y} x1="18" y1={y} x2="102" y2={y} />)}
-        </g>
-        <line x1="60" y1="138" x2="60" y2="195" stroke={ORANGE} strokeWidth="10" strokeLinecap="round" />
-        <rect x="54" y="188" width="12" height="22" rx="3" fill="#FFFFFF" />
-      </g>
-    </svg>
+    <>
+      <Photo
+        src={PHOTO.olgaBig}
+        alt="Jugador con zapatillas naranjas en cancha"
+        fallback={BLUE}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* slight blue tint to keep continuity with the section accent */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: `linear-gradient(180deg, rgba(42,107,176,0.15) 0%, rgba(42,107,176,0.35) 100%)` }}
+      />
+    </>
   );
 }
 
 function SideImageMock() {
   return (
-    <svg viewBox="0 0 320 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-      <rect width="320" height="600" fill={BLUE} />
-      {/* arm holding racket */}
-      <g>
-        <path d="M200 30 L270 100 L295 220 L260 230 L240 130 L180 80 Z" fill="#FFFFFF" />
-        <g transform="translate(40 70) rotate(-12)">
-          <ellipse cx="80" cy="80" rx="50" ry="62" fill="none" stroke={ORANGE} strokeWidth="6" />
-          <g stroke={ORANGE} strokeWidth="1.2" opacity="0.7">
-            {[36, 48, 60, 72, 84, 96, 108, 120].map(x => <line key={x} x1={x} y1="24" x2={x} y2="140" />)}
-            {[36, 48, 60, 72, 84, 96, 108, 120].map(y => <line key={y} x1="34" y1={y} x2="126" y2={y} />)}
-          </g>
-          <line x1="80" y1="146" x2="80" y2="220" stroke="#FFFFFF" strokeWidth="9" strokeLinecap="round" />
-        </g>
-      </g>
-      {/* leg + orange sneaker at bottom */}
-      <g>
-        <path d="M70 360 L150 360 L165 520 L100 520 Z" fill="#FFFFFF" />
-        <path d="M100 510 L165 510 L175 550 L95 550 Z" fill="#F2D4B5" />
-        <rect x="98" y="540" width="80" height="18" fill="#FFFFFF" />
-        <path d="M90 560 L185 560 L190 590 L85 590 Z" fill={ORANGE} />
-        <line x1="90" y1="575" x2="190" y2="575" stroke="#FFFFFF" strokeWidth="3" />
-      </g>
-    </svg>
+    <>
+      <Photo
+        src={PHOTO.olgaSide}
+        alt="Jugador con raqueta"
+        fallback={BLUE}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: `linear-gradient(180deg, rgba(42,107,176,0.2) 0%, rgba(42,107,176,0.5) 100%)` }}
+      />
+    </>
   );
 }
 
