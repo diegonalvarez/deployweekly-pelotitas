@@ -366,8 +366,9 @@ export default function Home() {
           HERO — editorial, asymmetric, big type
           ═══════════════════════════════════════════════════════ */}
       <section className="relative min-h-[92vh] flex flex-col justify-center overflow-hidden pt-20">
-        {/* Background — court grid + gradient blobs */}
-        <div className="absolute inset-0 bg-court-grid opacity-50 pointer-events-none" aria-hidden="true" />
+        {/* Background — court lines (stadium feel) + gradient blobs */}
+        <div className="absolute inset-0 bg-court-lines opacity-60 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-court-grid opacity-25 pointer-events-none" aria-hidden="true" />
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <div
             className="absolute w-[700px] h-[700px] rounded-full opacity-25 blur-3xl animate-float-slow"
@@ -403,9 +404,9 @@ export default function Home() {
                 <span className="absolute inset-0 rounded-full bg-brand animate-ping opacity-60" />
                 <span className="relative rounded-full bg-brand w-1.5 h-1.5" />
               </span>
-              <span className="text-text-primary tabular">247</span> partidos en juego ahora
+              <span className="text-text-primary font-mono">247</span> partidos en juego ahora
               <span className="text-text-muted mx-1">·</span>
-              <span className="text-text-primary tabular">1.4k</span> online
+              <span className="text-text-primary font-mono">1.4k</span> online
             </div>
           </FadeIn>
         </div>
@@ -455,32 +456,76 @@ export default function Home() {
             </FadeIn>
           </div>
 
-          {/* Right: spec card */}
+          {/* Right: live scoreboard mock — flagship product preview */}
           <div className="lg:col-span-4">
             <FadeIn delay={300}>
               <div className="relative">
                 <div
-                  className="absolute -inset-4 rounded-2xl opacity-20 blur-2xl pointer-events-none"
+                  className="absolute -inset-6 rounded-3xl opacity-25 blur-3xl pointer-events-none"
                   style={{ background: 'linear-gradient(135deg, #D4FF3F 0%, #6BA9FF 100%)' }}
                 />
-                <div className="relative bg-surface/80 backdrop-blur-md border border-border-dark rounded-xl p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <p className="eyebrow text-text-muted">SISTEMA</p>
-                    <span className="text-2xs text-brand font-mono">● live</span>
+                <div className="relative bg-base/90 backdrop-blur-md border border-border-dark rounded-xl overflow-hidden bg-court-lines">
+                  {/* Stadium header */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-dark/70 bg-surface/40">
+                    <span className="font-mono text-2xs uppercase tracking-[0.18em] text-text-muted">
+                      Set 2 / 3
+                    </span>
+                    <span className="font-mono text-2xs text-brand inline-flex items-center gap-1.5">
+                      <span className="relative flex w-1.5 h-1.5">
+                        <span className="absolute inset-0 rounded-full bg-brand animate-ping opacity-60" />
+                        <span className="relative rounded-full bg-brand w-1.5 h-1.5" />
+                      </span>
+                      live
+                    </span>
                   </div>
-                  <div className="space-y-3">
-                    {heroCounters.map((s) => (
-                      <div key={s.label} className="flex items-baseline justify-between border-b border-border-dark/60 pb-3 last:border-0 last:pb-0">
-                        <span className="text-xs text-text-muted uppercase tracking-widest" style={{ letterSpacing: '0.1em' }}>
-                          {s.label}
-                        </span>
-                        <span className="text-2xl font-bold text-text-primary tabular tracking-tight-2">
-                          <span ref={s.ref}>{s.count.toLocaleString('es-AR')}</span>
-                          <span className="text-brand">{s.suffix}</span>
-                        </span>
-                      </div>
-                    ))}
+                  {/* Row 1 — winning side */}
+                  <div className="px-4 py-4 flex items-center gap-3 bg-brand/[0.04]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-brand shrink-0" style={{ boxShadow: '0 0 10px rgba(212,255,63,0.6)' }} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-base font-semibold text-text-primary leading-tight truncate">Diego</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Sacando</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="score-digit text-2xl text-text-muted w-5 text-center">6</span>
+                      <span className="score-digit text-2xl text-brand w-5 text-center">4</span>
+                    </div>
+                    <span className="score-digit text-5xl text-text-primary w-12 text-center leading-none">40</span>
                   </div>
+                  {/* Row 2 */}
+                  <div className="px-4 py-4 flex items-center gap-3 border-t border-border-dark/70">
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky/30 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-base font-semibold text-text-primary leading-tight truncate">Juan</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Equipo B</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="score-digit text-2xl text-text-muted w-5 text-center">3</span>
+                      <span className="score-digit text-2xl text-text-muted w-5 text-center">3</span>
+                    </div>
+                    <span className="score-digit text-5xl text-text-muted w-12 text-center leading-none">30</span>
+                  </div>
+                  {/* Footer caption */}
+                  <div className="px-4 py-2.5 border-t border-border-dark/70 bg-surface/30 flex items-center justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">
+                      Anotador en vivo
+                    </span>
+                    <span className="font-mono text-[10px] text-text-secondary">
+                      Club Almagro · Cancha 3
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mini KPI strip below */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {heroCounters.map((s) => (
+                    <div key={s.label} className="bg-surface/60 backdrop-blur-md border border-border-dark rounded-lg px-3 py-2.5">
+                      <p className="font-mono text-[9px] uppercase tracking-widest text-text-muted truncate">{s.label}</p>
+                      <p className="score-digit text-lg text-text-primary mt-0.5">
+                        <span ref={s.ref}>{s.count.toLocaleString('es-AR')}</span>
+                        <span className="text-brand">{s.suffix}</span>
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </FadeIn>
@@ -537,17 +582,17 @@ export default function Home() {
 
             <FadeIn delay={220}>
               <div className="grid grid-cols-3 gap-4 mt-10 pt-10 border-t border-border-dark">
-                <div>
-                  <p className="text-display-4 font-bold text-text-primary tabular tracking-tight-2">0%</p>
-                  <p className="text-xs text-text-muted mt-1">Comisión por reserva</p>
+                <div className="sideline">
+                  <p className="score-digit text-5xl sm:text-6xl text-text-primary">0<span className="text-brand">%</span></p>
+                  <p className="font-mono text-2xs uppercase tracking-widest text-text-muted mt-2">Comisión por reserva</p>
                 </div>
-                <div>
-                  <p className="text-display-4 font-bold text-text-primary tabular tracking-tight-2">30s</p>
-                  <p className="text-xs text-text-muted mt-1">Para crear cuenta</p>
+                <div className="sideline sideline-sky">
+                  <p className="score-digit text-5xl sm:text-6xl text-text-primary">30<span className="text-sky">s</span></p>
+                  <p className="font-mono text-2xs uppercase tracking-widest text-text-muted mt-2">Para crear cuenta</p>
                 </div>
-                <div>
-                  <p className="text-display-4 font-bold text-text-primary tabular tracking-tight-2">24/7</p>
-                  <p className="text-xs text-text-muted mt-1">Reservas online</p>
+                <div className="sideline sideline-clay">
+                  <p className="score-digit text-5xl sm:text-6xl text-text-primary">24<span className="text-clay">/7</span></p>
+                  <p className="font-mono text-2xs uppercase tracking-widest text-text-muted mt-2">Reservas online</p>
                 </div>
               </div>
             </FadeIn>
@@ -590,7 +635,7 @@ export default function Home() {
                     </div>
                     <span className="text-2xs font-mono text-text-muted">{f.label}</span>
                   </div>
-                  <h3 className="text-lg font-bold text-text-primary mb-2 tracking-tight-2">
+                  <h3 className="font-display text-xl font-semibold text-text-primary mb-2 tracking-tight-2">
                     {f.title}
                   </h3>
                   <p className="text-sm text-text-secondary leading-relaxed">{f.desc}</p>
