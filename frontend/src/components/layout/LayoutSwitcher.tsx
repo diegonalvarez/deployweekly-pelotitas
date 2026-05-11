@@ -28,11 +28,8 @@ const MARKETING_PREFIXES = [
 const NAKED_PREFIXES = [
   '/m/',      // shareable match card
   '/h2h/',    // public head-to-head
-  '/v1',      // legacy landing A (kept for comparison)
-  '/v2',      // landing B (dark editorial)
-  '/v3',      // landing C (brutalist light)
-  '/v4',      // landing D (Linear-style analytics)
-  '/v5',      // landing E (Flonea/Olga — now also at /)
+  '/v1',      // legacy landing kept as a reference (optional)
+  '/v5',      // source of the live landing — re-exported by /
 ];
 
 /* Exact-match naked routes — / itself is the new v5 landing. */

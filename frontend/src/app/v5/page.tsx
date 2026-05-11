@@ -87,10 +87,6 @@ function NavBar() {
         <a href="#footer" className="hover:opacity-60 transition-opacity">About</a>
       </nav>
       <div className="flex items-center gap-2">
-        <Link href="/" className="hidden md:inline-flex text-[11px] uppercase tracking-[0.15em] font-medium opacity-50 hover:opacity-100" style={{ color: INK }}>A</Link>
-        <Link href="/v2" className="hidden md:inline-flex text-[11px] uppercase tracking-[0.15em] font-medium opacity-50 hover:opacity-100" style={{ color: INK }}>B</Link>
-        <Link href="/v3" className="hidden md:inline-flex text-[11px] uppercase tracking-[0.15em] font-medium opacity-50 hover:opacity-100" style={{ color: INK }}>C</Link>
-        <Link href="/v4" className="hidden md:inline-flex text-[11px] uppercase tracking-[0.15em] font-medium opacity-50 hover:opacity-100" style={{ color: INK }}>D</Link>
         <Link
           href="/register"
           className="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] pl-5 pr-1.5 py-1.5 rounded-full transition-all hover:bg-black/[0.03]"
@@ -746,10 +742,6 @@ function FooterBar() {
         <Link href="/terms"   className="opacity-60 hover:opacity-100">Términos</Link>
         <Link href="/privacy" className="opacity-60 hover:opacity-100">Privacidad</Link>
         <span className="opacity-30">·</span>
-        <Link href="/"   className="opacity-60 hover:opacity-100">A</Link>
-        <Link href="/v2" className="opacity-60 hover:opacity-100">B</Link>
-        <Link href="/v3" className="opacity-60 hover:opacity-100">C</Link>
-        <Link href="/v4" className="opacity-60 hover:opacity-100">D</Link>
       </div>
     </footer>
   );
