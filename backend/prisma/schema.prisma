@@ -296,11 +296,38 @@ model User {
   scoreboardEvents        ScoreboardEvent[]        @relation("ScoreboardEventAuthor")
   eloRatings              EloRating[]              @relation("UserEloRatings")
   reservationJoins        ReservationJoin[]        @relation("ReservationJoiner")
+  deviceTokens            DeviceToken[]            @relation("UserDeviceTokens")
 
   @@index([email])
   @@index([phone])
   @@index([googleId])
   @@map("users")
+}
+
+// ─── Device tokens for native push (Capacitor APNs / FCM) ───
+// One row per (user, token) — a user may have multiple devices.
+// On unregister or token rotation, mark with revokedAt and prune.
+
+model DeviceToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserDeviceTokens", fields: [userId], references: [id], onDelete: Cascade)
+  platform  DevicePlatform
+  token     String
+  appVersion String?
+  revokedAt DateTime?
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([userId, token])
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
 }
 
 // ─── ELO ratings — one row per (user, sport) ─────────────────────────

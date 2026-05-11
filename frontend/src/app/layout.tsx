@@ -8,6 +8,7 @@ import LayoutSwitcher from '@/components/layout/LayoutSwitcher';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import InstallPrompt from '@/components/InstallPrompt';
 import PWARegister from '@/components/PWARegister';
+import PushRegistrar from '@/components/PushRegistrar';
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
@@ -81,6 +82,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-base text-text-primary`}>
         <PWARegister />
         <AuthProvider>
+          <PushRegistrar />
           <SubscriptionProvider>
             <LocationProvider>
               <EmailVerificationBanner />
