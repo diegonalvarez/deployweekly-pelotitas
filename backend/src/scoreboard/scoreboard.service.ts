@@ -57,11 +57,44 @@ export class ScoreboardService {
       if (existing) return this.findOne(userId, existing.id);
     }
 
+    // If this scoreboard belongs to a tournament match, inherit the
+    // tournament's match-format rules so all official matches play with
+    // the same settings.
+    let tournamentDefaults: Partial<typeof dto> = {};
+    if (dto.tournamentMatchId) {
+      const tm = await this.prisma.tournamentMatch.findUnique({
+        where: { id: dto.tournamentMatchId },
+        include: {
+          tournament: {
+            select: {
+              matchBestOf: true,
+              matchGamesPerSet: true,
+              matchTieBreakAt: true,
+              matchTieBreakPts: true,
+              matchSuperTbAtLast: true,
+              matchSuperTbPts: true,
+              matchGoldenPoint: true,
+              matchProSetTo: true,
+            },
+          },
+        },
+      });
+      const t = tm?.tournament;
+      if (t) {
+        tournamentDefaults = {
+          totalSets: t.matchProSetTo ? 1 : t.matchBestOf,
+          gamesPerSet: t.matchProSetTo ?? t.matchGamesPerSet,
+          superTieBreak: t.matchSuperTbAtLast,
+          scoringMode: t.matchGoldenPoint ? 'GOLDEN_POINT' : 'STANDARD',
+        } as any;
+      }
+    }
+
     const seed = initialState({
-      scoringMode: dto.scoringMode || 'STANDARD',
-      totalSets: dto.totalSets ?? 3,
-      gamesPerSet: dto.gamesPerSet ?? 6,
-      superTieBreak: dto.superTieBreak ?? false,
+      scoringMode: dto.scoringMode || tournamentDefaults.scoringMode || 'STANDARD',
+      totalSets: dto.totalSets ?? tournamentDefaults.totalSets ?? 3,
+      gamesPerSet: dto.gamesPerSet ?? tournamentDefaults.gamesPerSet ?? 6,
+      superTieBreak: dto.superTieBreak ?? tournamentDefaults.superTieBreak ?? false,
     });
 
     const sb = await this.prisma.scoreboard.create({
