@@ -8,8 +8,8 @@ import AppShell from './AppShell';
 /* Pages that get marketing chrome (Navbar + footer-style)
    Everything else falls through to AppShell (sidebar layout).
    ─────────────────────────────────────────────────────────── */
-const MARKETING_PATHS = [
-  '/',
+const MARKETING_PATHS: string[] = [
+  // empty — the home page is now the naked v5 landing.
 ];
 
 /* Auth pages render naked (no nav) — they have their own v5 layout. */
@@ -28,11 +28,15 @@ const MARKETING_PREFIXES = [
 const NAKED_PREFIXES = [
   '/m/',      // shareable match card
   '/h2h/',    // public head-to-head
-  '/v2',      // landing B (marketing variant — dark editorial)
-  '/v3',      // landing C (marketing variant — brutalist light)
-  '/v4',      // landing D (marketing variant — Linear-style analytics)
-  '/v5',      // landing E (marketing variant — sport editorial w/ video hero)
+  '/v1',      // legacy landing A (kept for comparison)
+  '/v2',      // landing B (dark editorial)
+  '/v3',      // landing C (brutalist light)
+  '/v4',      // landing D (Linear-style analytics)
+  '/v5',      // landing E (Flonea/Olga — now also at /)
 ];
+
+/* Exact-match naked routes — / itself is the new v5 landing. */
+const NAKED_EXACT = ['/'];
 
 function isMarketing(pathname: string): boolean {
   if (MARKETING_PATHS.includes(pathname)) return true;
@@ -40,6 +44,7 @@ function isMarketing(pathname: string): boolean {
 }
 
 function isNaked(pathname: string): boolean {
+  if (NAKED_EXACT.includes(pathname)) return true;
   return NAKED_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
