@@ -28,6 +28,7 @@ const MARKETING_PREFIXES = [
 const NAKED_PREFIXES = [
   '/m/',      // shareable match card
   '/h2h/',    // public head-to-head
+  '/u/',      // public player profile
   '/v1',      // legacy landing kept as a reference (optional)
   '/v5',      // source of the live landing — re-exported by /
 ];

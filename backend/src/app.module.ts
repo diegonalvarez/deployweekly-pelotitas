@@ -22,6 +22,7 @@ import { ScoreboardModule } from './scoreboard/scoreboard.module';
 import { EloModule } from './elo/elo.module';
 import { PushModule } from './push/push.module';
 import { ClipsModule } from './clips/clips.module';
+import { TimelineModule } from './timeline/timeline.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ClipsModule } from './clips/clips.module';
     EloModule,
     PushModule,
     ClipsModule,
+    TimelineModule,
   ],
   providers: [
     {
