@@ -706,4 +706,34 @@ export class UsersService {
 
     return { events };
   }
+
+  /** Match an array of E.164 phones to existing pelotitas accounts. */
+  async lookupByPhones(currentUserId: string, phones: string[]) {
+    const clean = (phones || [])
+      .map((p) => (p || '').trim())
+      .filter((p) => /^\+\d{6,15}$/.test(p));
+    if (clean.length === 0) return { matched: [], notOnPelotitas: [] };
+
+    // Cap the per-request lookup to avoid abuse.
+    const capped = Array.from(new Set(clean)).slice(0, 500);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        phone: { in: capped },
+        deletedAt: null,
+        id: { not: currentUserId },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        phone: true,
+      },
+    });
+
+    const matchedPhones = new Set(users.map((u) => u.phone!));
+    const notOnPelotitas = capped.filter((p) => !matchedPhones.has(p));
+    return { matched: users, notOnPelotitas };
+  }
 }
