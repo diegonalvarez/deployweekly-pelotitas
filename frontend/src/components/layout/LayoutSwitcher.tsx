@@ -26,6 +26,7 @@ const NAKED_PREFIXES = [
   '/h2h/',    // public head-to-head
   '/v2',      // landing B (marketing variant — dark editorial)
   '/v3',      // landing C (marketing variant — brutalist light)
+  '/v4',      // landing D (marketing variant — Linear-style analytics)
 ];
 
 function isMarketing(pathname: string): boolean {
