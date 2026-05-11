@@ -64,6 +64,7 @@ export default function LandingE() {
       <Hero />
       <SubheroRow />
       <OlgaSection />
+      <CTASlides />
       <ClosingCTA />
       <FooterBar />
     </div>
@@ -672,6 +673,158 @@ function SideImageMock() {
         style={{ background: `linear-gradient(180deg, rgba(42,107,176,0.2) 0%, rgba(42,107,176,0.5) 100%)` }}
       />
     </>
+  );
+}
+
+/* ╭───────────── CTA SLIDES — 3 horizontal cards with bg media ─────────────╮ */
+/* Background imagery: Unsplash + Pexels CC0 (free to use, no attribution
+   required). Each slide gets a still photo by default; a short video URL
+   (Pexels MP4) can be pasted in CTA_SLIDES below and the component will
+   prefer it. Search Pexels: https://www.pexels.com/search/videos/padel/ */
+
+const CTA_SLIDES = [
+  {
+    eyebrow: '01 · CLUBES',
+    title: 'REGISTRÁ\nTU COMPLEJO.',
+    body: 'Publicá tus canchas, recibí reservas online sin comisión y manejá tu agenda en una sola app.',
+    cta: 'Registrar complejo',
+    href: '/register?role=CLUB_OWNER',
+    photo: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1400&q=85',
+    video: '', // e.g. 'https://videos.pexels.com/video-files/XXXXX/XXXXX-hd_1920_1080_30fps.mp4'
+    tint: 'rgba(59,31,15,0.55)',
+    badge: 'PARA DUEÑOS',
+  },
+  {
+    eyebrow: '02 · JUGADORES',
+    title: 'ANOTATE A UN\nTORNEO HOY.',
+    body: 'Filtrá por nivel, ciudad y deporte. Inscripción en 30 segundos, fixture y resultados en vivo.',
+    cta: 'Ver torneos abiertos',
+    href: '/tournaments',
+    photo: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1400&q=85',
+    video: '',
+    tint: 'rgba(42,107,176,0.55)',
+    badge: 'COMPETÍ',
+  },
+  {
+    eyebrow: '03 · ORGANIZADORES',
+    title: 'CREÁ EL\nTORNEO DEL AÑO.',
+    body: 'Grupos, llaves, anotador oficial, reglas custom y match cards listas para Instagram.',
+    cta: 'Crear torneo',
+    href: '/tournaments/create',
+    photo: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=85',
+    video: '',
+    tint: 'rgba(26,18,8,0.55)',
+    badge: 'PRODUCÍ',
+  },
+];
+
+function CTASlides() {
+  return (
+    <section className="px-2 sm:px-4 pb-6 sm:pb-10">
+      <div className="max-w-[1320px] mx-auto">
+        <div className="flex items-end justify-between flex-wrap gap-4 px-4 sm:px-6 mb-5">
+          <h2
+            className="font-bold uppercase tracking-[-0.03em] leading-[0.92]"
+            style={{
+              fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+              fontSize: 'clamp(28px, 4.5vw, 56px)',
+              color: INK,
+            }}
+          >
+            ELEGÍ <span style={{ color: ORANGE }}>TU JUGADA</span>.
+          </h2>
+          <p className="text-[13px] font-bold uppercase tracking-[0.1em] max-w-xs" style={{ color: '#4F3924' }}>
+            Tres caminos, una sola plataforma. Cero comisión, cero formularios eternos.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          {CTA_SLIDES.map((s, i) => <SlideCard key={i} {...s} />)}
+        </div>
+
+        <p className="px-4 sm:px-6 mt-4 text-[10px] uppercase tracking-[0.18em] font-bold opacity-50" style={{ color: INK, fontFamily: 'var(--font-mono), monospace' }}>
+          Imágenes: Unsplash + Pexels · CC0
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function SlideCard({
+  eyebrow, title, body, cta, href, photo, video, tint, badge,
+}: typeof CTA_SLIDES[number]) {
+  return (
+    <article
+      className="relative rounded-[28px] overflow-hidden group"
+      style={{ minHeight: 480, background: BROWN }}
+    >
+      {/* Background media — video preferred, photo fallback */}
+      {video ? (
+        <video
+          src={video}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          poster={photo}
+        />
+      ) : (
+        <img
+          src={photo}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0'; }}
+        />
+      )}
+
+      {/* Tint overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: `linear-gradient(180deg, ${tint} 0%, rgba(26,18,8,0.85) 100%)` }}
+      />
+
+      {/* Top badge */}
+      <span
+        className="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-[0.22em] px-2.5 py-1 rounded-full backdrop-blur-md"
+        style={{ background: 'rgba(244,239,230,0.85)', color: INK, fontFamily: 'var(--font-mono), monospace' }}
+      >
+        ● {badge}
+      </span>
+
+      {/* Content */}
+      <div className="relative h-full flex flex-col justify-end p-6 sm:p-7 text-white">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#FFD23F', fontFamily: 'var(--font-mono), monospace' }}>
+          {eyebrow}
+        </p>
+        <h3
+          className="font-bold uppercase tracking-[-0.035em] leading-[0.88] whitespace-pre-line"
+          style={{
+            fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+            fontSize: 'clamp(28px, 3.6vw, 44px)',
+            color: '#F2EDDE',
+          }}
+        >
+          {title}
+        </h3>
+        <p className="mt-3 text-[13px] leading-relaxed max-w-xs" style={{ color: 'rgba(242,237,222,0.88)' }}>
+          {body}
+        </p>
+
+        <Link
+          href={href}
+          className="mt-5 inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full self-start transition-transform group-hover:translate-x-0.5"
+          style={{ background: '#F2EDDE', color: INK }}
+        >
+          <span className="text-[12px] font-bold uppercase tracking-[0.1em]">{cta}</span>
+          <span className="inline-flex items-center justify-center w-9 h-9 rounded-full" style={{ background: ORANGE, color: INK }}>
+            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+          </span>
+        </Link>
+      </div>
+    </article>
   );
 }
 
