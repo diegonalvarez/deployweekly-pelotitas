@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { formatDate } from '@/lib/date';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { Users, Check, X as XIcon, Loader2 } from 'lucide-react';
 
 export default function ReservationsPage() {
   const { user } = useAuth();
@@ -143,12 +144,176 @@ export default function ReservationsPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Matchmaking panel — only for future confirmed reservations */}
+                  {r.status !== 'CANCELLED' && (
+                    <MatchmakingPanel reservation={r} onChange={load} />
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function MatchmakingPanel({ reservation, onChange }: { reservation: any; onChange: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [slots, setSlots] = useState(reservation.slotsNeeded || 1);
+  const [note, setNote] = useState(reservation.joinNote || '');
+  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const isOpen = !!reservation.openForJoin && (reservation.slotsNeeded || 0) > 0;
+  const joiners: any[] = reservation.joiners || [];
+  const pending = joiners.filter((j) => j.status === 'PENDING');
+  const accepted = joiners.filter((j) => j.status === 'ACCEPTED');
+
+  const submitOpen = async () => {
+    setSaving(true);
+    try {
+      await api.patch(`/reservations/${reservation.id}/open`, {
+        slotsNeeded: slots,
+        joinNote: note || null,
+      });
+      toast.success('Cupos abiertos. Otros jugadores van a poder anotarse.');
+      setOpen(false);
+      onChange();
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const close = async () => {
+    setSaving(true);
+    try {
+      await api.patch(`/reservations/${reservation.id}/close`);
+      toast.success('Cupos cerrados');
+      onChange();
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const respond = async (joinId: string, accept: boolean) => {
+    setBusy(joinId);
+    try {
+      await api.patch(`/reservations/joins/${joinId}/respond`, { accept });
+      toast.success(accept ? 'Aceptado' : 'Rechazado');
+      onChange();
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border-dark">
+      {!isOpen && !open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="btn-secondary text-xs"
+        >
+          <Users className="w-3.5 h-3.5" /> Faltan jugadores
+        </button>
+      )}
+
+      {open && (
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="font-mono text-2xs uppercase tracking-widest text-text-muted">
+              Faltan
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={6}
+              value={slots}
+              onChange={(e) => setSlots(parseInt(e.target.value) || 1)}
+              className="input w-20 text-center font-mono"
+            />
+            <span className="font-mono text-2xs uppercase tracking-widest text-text-muted">
+              jugadores
+            </span>
+          </div>
+          <input
+            className="input"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Comentario opcional (ej: nivel 3.0, juego relajado…)"
+            maxLength={140}
+          />
+          <div className="flex items-center gap-2">
+            <button onClick={submitOpen} disabled={saving} className="btn-primary text-xs">
+              {saving ? <><Loader2 className="w-3 h-3 animate-spin" /> Abriendo…</> : 'Abrir cupos'}
+            </button>
+            <button onClick={() => setOpen(false)} className="btn-ghost text-xs">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isOpen && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <span className="font-mono text-2xs uppercase tracking-widest text-brand font-semibold">
+              ▸ Buscando {reservation.slotsNeeded} jugador{reservation.slotsNeeded === 1 ? '' : 'es'}
+            </span>
+            <button onClick={close} disabled={saving} className="btn-ghost text-xs">
+              Cerrar cupos
+            </button>
+          </div>
+          {reservation.joinNote && (
+            <p className="text-sm text-text-secondary leading-relaxed border-l-2 border-brand/40 pl-3 italic">
+              "{reservation.joinNote}"
+            </p>
+          )}
+          {(pending.length > 0 || accepted.length > 0) && (
+            <div className="space-y-2">
+              {accepted.map((j) => (
+                <div key={j.id} className="flex items-center gap-3 py-1.5">
+                  <div className="w-8 h-8 rounded-full bg-brand/15 border border-brand/30 flex items-center justify-center text-2xs font-display font-bold text-brand">
+                    {j.user.firstName[0]}{j.user.lastName[0]}
+                  </div>
+                  <span className="text-sm text-text-primary flex-1">{j.user.firstName} {j.user.lastName}</span>
+                  <span className="badge-brand text-2xs">Aceptado</span>
+                </div>
+              ))}
+              {pending.map((j) => (
+                <div key={j.id} className="flex items-center gap-3 py-1.5">
+                  <div className="w-8 h-8 rounded-full bg-surface-light border border-border-dark flex items-center justify-center text-2xs font-display font-bold text-text-secondary">
+                    {j.user.firstName[0]}{j.user.lastName[0]}
+                  </div>
+                  <span className="text-sm text-text-primary flex-1">{j.user.firstName} {j.user.lastName}</span>
+                  <button
+                    onClick={() => respond(j.id, true)}
+                    disabled={busy === j.id}
+                    className="btn-icon-sm hover:text-brand"
+                    aria-label="Aceptar"
+                  >
+                    {busy === j.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => respond(j.id, false)}
+                    disabled={busy === j.id}
+                    className="btn-icon-sm hover:text-negative"
+                    aria-label="Rechazar"
+                  >
+                    <XIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

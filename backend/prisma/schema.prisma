@@ -295,6 +295,7 @@ model User {
   scoreboards             Scoreboard[]             @relation("ScoreboardOwner")
   scoreboardEvents        ScoreboardEvent[]        @relation("ScoreboardEventAuthor")
   eloRatings              EloRating[]              @relation("UserEloRatings")
+  reservationJoins        ReservationJoin[]        @relation("ReservationJoiner")
 
   @@index([email])
   @@index([phone])
@@ -646,10 +647,44 @@ model Reservation {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
+  // ─── Matchmaking — "I have a court, looking for players" ───
+  openForJoin   Boolean @default(false)
+  slotsNeeded   Int     @default(0) // how many more players the owner needs
+  joinLevelMin  String? // optional level/category filter — freeform "B", "3.0", etc.
+  joinLevelMax  String?
+  joinNote      String?
+  joiners       ReservationJoin[]
+
   @@index([courtId, date])
   @@index([userId])
   @@index([status])
+  @@index([openForJoin, date])
   @@map("reservations")
+}
+
+// ─── Players joining an open reservation slot ──────────────────────
+model ReservationJoin {
+  id            String              @id @default(cuid())
+  reservationId String
+  reservation   Reservation         @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                @relation("ReservationJoiner", fields: [userId], references: [id], onDelete: Cascade)
+  status        ReservationJoinStatus @default(PENDING)
+  message       String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([reservationId, userId])
+  @@index([userId])
+  @@index([reservationId, status])
+  @@map("reservation_joins")
+}
+
+enum ReservationJoinStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
 }
 
 // ─── COACHES ───────────────────────────────────────────

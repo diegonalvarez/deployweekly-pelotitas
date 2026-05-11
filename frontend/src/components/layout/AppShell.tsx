@@ -74,6 +74,7 @@ const playerGroup: NavGroup = {
     { href: '/matches',          label: 'Partidos',     icon: <RaquetaIcon className="w-4 h-4" /> },
     { href: '/matches/log',      label: 'Mi historial', icon: <StickyNote className="w-4 h-4" /> },
     { href: '/scoreboards',      label: 'Anotadores',   icon: <MarcadorIcon className="w-4 h-4" /> },
+    { href: '/matchmaking',      label: 'Buscar partido', icon: <Users className="w-4 h-4" /> },
     { href: '/available',        label: 'Disponibles',  icon: <Activity className="w-4 h-4" /> },
     { href: '/connections',      label: 'Conexiones',   icon: <Link2 className="w-4 h-4" /> },
   ],
