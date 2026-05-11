@@ -294,11 +294,37 @@ model User {
   matchLogParticipations  MatchLogParticipant[]    @relation("MatchLogParticipantUser")
   scoreboards             Scoreboard[]             @relation("ScoreboardOwner")
   scoreboardEvents        ScoreboardEvent[]        @relation("ScoreboardEventAuthor")
+  eloRatings              EloRating[]              @relation("UserEloRatings")
 
   @@index([email])
   @@index([phone])
   @@index([googleId])
   @@map("users")
+}
+
+// ─── ELO ratings — one row per (user, sport) ─────────────────────────
+// Recalculated whenever a Scoreboard transitions to COMPLETED with a
+// known winner. Default starting rating is 1000; K-factor is 32 while
+// matchesCount < 30 (provisional), 16 afterwards.
+
+model EloRating {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("UserEloRatings", fields: [userId], references: [id], onDelete: Cascade)
+  sport        Sport
+  rating       Int      @default(1000)
+  peakRating   Int      @default(1000)
+  matchesCount Int      @default(0)
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  draws        Int      @default(0)
+  lastMatchAt  DateTime?
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, sport])
+  @@index([sport, rating])
+  @@map("elo_ratings")
 }
 
 // ─── PROFILES ───────────────────────────────────────────

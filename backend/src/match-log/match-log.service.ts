@@ -7,10 +7,11 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMatchLogDto, UpdateMatchLogDto, MatchLogParticipantDto } from './dto/match-log.dto';
 import { Sport, MatchLogSide, Prisma } from '@prisma/client';
+import { EloService } from '../elo/elo.service';
 
 @Injectable()
 export class MatchLogService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private elo: EloService) {}
 
   /* ─── CREATE ───────────────────────────────────────────── */
   async create(ownerId: string, dto: CreateMatchLogDto) {
@@ -20,7 +21,7 @@ export class MatchLogService {
 
     const isLinkedToTournament = !!dto.tournamentMatchId;
 
-    return this.prisma.matchLogEntry.create({
+    const entry = await this.prisma.matchLogEntry.create({
       data: {
         ownerId,
         matchId: dto.matchId,
@@ -42,6 +43,32 @@ export class MatchLogService {
       },
       include: this.fullInclude(),
     });
+
+    // ELO update — only fire on singles (1 partner side-A or none, 1 opponent
+    // with a registered userId) with a definitive result. Avoids inflating
+    // ratings with phantom or doubles matches in this first pass.
+    await this.maybeApplyEloFromEntry(entry, ownerId);
+
+    return entry;
+  }
+
+  /** Best-effort ELO update — silently no-ops if conditions aren't met. */
+  private async maybeApplyEloFromEntry(
+    entry: { id: string; sport: Sport; result: any; date: Date; participants: any[] },
+    ownerId: string,
+  ): Promise<void> {
+    if (!entry.result) return;
+    const partners = entry.participants.filter((p) => p.side === MatchLogSide.PARTNER);
+    const opponents = entry.participants.filter((p) => p.side === MatchLogSide.OPPONENT);
+    if (partners.length > 0) return; // doubles — defer
+    if (opponents.length !== 1) return;
+    const opp = opponents[0];
+    if (!opp.userId || opp.userId === ownerId) return;
+    try {
+      await this.elo.applySinglesResult(ownerId, opp.userId, entry.sport, entry.result, entry.date);
+    } catch {
+      /* don't break match-log create on elo failure */
+    }
   }
 
   /* ─── LIST (mine) ──────────────────────────────────────── */
