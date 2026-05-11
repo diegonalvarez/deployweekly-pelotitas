@@ -695,7 +695,16 @@ model ClubProfile {
   email           String?
   website         String?
   logoUrl         String?
-  imageUrl        String? // Main photo of the club
+  imageUrl        String? // Main photo of the club (hero)
+  // Public landing extras
+  galleryUrls     String[]              @default([]) // additional photos for the gallery
+  videoUrl        String? // optional intro video (mp4/youtube/vimeo)
+  amenities       String[]              @default([]) // freeform tags: vestuarios, parking, bar...
+  hoursWeekday    String? // freeform like "07:00 - 23:00"
+  hoursWeekend    String?
+  instagramUrl    String?
+  whatsappPhone   String? // E.164 — direct contact via wa.me/<digits>
+  // ─── End landing extras ─────────────
   sports          Sport[]               @default([])
   approvalStatus  ClubApprovalStatus    @default(PENDING)
   approvedAt      DateTime?
