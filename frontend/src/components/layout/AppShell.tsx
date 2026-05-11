@@ -41,6 +41,7 @@ import {
   MarcadorIcon,
   FuegoIcon,
 } from '@/components/icons/SportIcons';
+import ThemeToggle from '@/components/ThemeToggle';
 
 /* ─────────────────────────────────────────────────────────────
    Sidebar nav definition
@@ -391,6 +392,8 @@ function Topbar({ onMobileMenu }: { onMobileMenu: () => void }) {
               </div>
             )}
 
+            <ThemeToggle compact />
+
             <Link href="/notifications" className="relative inline-flex items-center justify-center w-10 h-10 rounded-full"
                   style={{ border: '1px solid var(--v5-paper-2)', color: 'var(--v5-ink)' }}
                   aria-label="Notificaciones">
@@ -471,6 +474,7 @@ function Topbar({ onMobileMenu }: { onMobileMenu: () => void }) {
 
         {!user && (
           <div className="flex items-center gap-2">
+            <ThemeToggle compact />
             <Link href="/login" className="hidden sm:inline-flex text-[12px] font-bold uppercase tracking-[0.1em] px-3 h-10 items-center" style={{ color: 'var(--v5-ink)' }}>
               Ingresar
             </Link>

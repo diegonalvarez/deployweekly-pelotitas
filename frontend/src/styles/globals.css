@@ -12,7 +12,7 @@
   --base-rgb:    10, 14, 20;     /* #0A0E14 */
   --surface-rgb: 17, 22, 31;     /* #11161F */
 
-  /* ─── V5 tokens — Flonea/Olga inspired internal pages ─── */
+  /* ─── V5 tokens — Flonea/Olga inspired internal pages (LIGHT) ─── */
   --v5-paper:        #F4EFE6;
   --v5-paper-2:      #EBE4D5;
   --v5-ink:          #1A1208;
@@ -28,6 +28,34 @@
   --v5-pink:         #EFD2D2;
   --v5-blue:         #2A6BB0;
   --v5-sky:          #A6D4F2;
+
+  /* "Card" surface — separate var so we can flip dark independently */
+  --v5-card-bg:      #FFFFFF;
+  --v5-card-bg-2:    rgba(255,255,255,0.6);
+}
+
+/* ─── V5 DARK mode — same accents, inverted surfaces ─── */
+html.v5-dark {
+  --v5-paper:        #14100B;  /* warm near-black */
+  --v5-paper-2:      #221912;  /* hairline borders */
+  --v5-ink:          #F2EDDE;  /* text (was the cream) */
+  --v5-ink-2:        #B5A892;  /* secondary text */
+  --v5-brown:        #2A1408;  /* deeper brown for hero card */
+  --v5-brown-2:      #1A0E06;
+  --v5-cream:        #F2EDDE;
+  --v5-yellow:       #FFD23F;
+  --v5-orange:       #FF7A3D;
+  --v5-lime:         #6F8A2C;
+  --v5-lime-ink:     #ECF5C8;
+  --v5-red:          #E04A3C;
+  --v5-pink:         #4C2A2A;
+  --v5-blue:         #2A6BB0;
+  --v5-sky:          #A6D4F2;
+
+  --v5-card-bg:      #1B1510;
+  --v5-card-bg-2:    rgba(34,25,18,0.6);
+
+  color-scheme: dark;
 }
 
 @layer base {
@@ -560,7 +588,7 @@ html.v5 body {
 
 /* Pastel surface card with light shadow */
 .v5-card {
-  background: #FFFFFF;
+  background: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   border-radius: 24px;
   padding: 1.25rem;
@@ -750,11 +778,11 @@ html.v5 body {
   background-image: none;
 }
 
-.v5-shell-main .bg-surface { background-color: #FFFFFF; }
+.v5-shell-main .bg-surface { background-color: var(--v5-card-bg); }
 .v5-shell-main .bg-surface-light,
 .v5-shell-main .bg-surface-card,
 .v5-shell-main .bg-surface-raised,
-.v5-shell-main .bg-surface-hover { background-color: rgba(255,255,255,0.6); }
+.v5-shell-main .bg-surface-hover { background-color: var(--v5-card-bg-2); }
 
 .v5-shell-main .text-text-primary { color: var(--v5-ink); }
 .v5-shell-main .text-text-secondary { color: var(--v5-ink-2); }
@@ -770,7 +798,7 @@ html.v5 body {
 .v5-shell-main .card-elevated,
 .v5-shell-main .card-glow,
 .v5-shell-main .card-interactive {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   border-radius: 22px;
   color: var(--v5-ink);
@@ -787,13 +815,13 @@ html.v5 body {
 
 .v5-shell-main .glass,
 .v5-shell-main .glass-dark {
-  background: rgba(255,255,255,0.85);
+  background: var(--v5-card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--v5-paper-2);
   border-radius: 22px;
   color: var(--v5-ink);
-  box-shadow: 0 20px 50px -20px rgba(26,18,8,0.18);
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,0.4);
 }
 
 .v5-shell-main .btn-primary {
@@ -810,7 +838,7 @@ html.v5 body {
 .v5-shell-main .btn-primary:hover { background-color: var(--v5-brown); box-shadow: none; }
 
 .v5-shell-main .btn-secondary {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   color: var(--v5-ink);
   border-radius: 999px;
@@ -845,7 +873,7 @@ html.v5 body {
 
 .v5-shell-main .btn-icon,
 .v5-shell-main .btn-icon-sm {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   color: var(--v5-ink);
   border-radius: 999px;
@@ -879,7 +907,7 @@ html.v5 body {
 .v5-shell-main .input-search,
 .v5-shell-main .input-dark,
 .v5-shell-main .textarea {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   color: var(--v5-ink);
   border-radius: 14px;
@@ -914,7 +942,7 @@ html.v5 body {
 
 .v5-shell-main .stat-card,
 .v5-shell-main .kpi-tile {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   border-radius: 22px;
   box-shadow: 0 1px 0 0 rgba(26,18,8,0.02);
@@ -925,7 +953,7 @@ html.v5 body {
 .v5-shell-main .kpi-label { color: var(--v5-ink-2); opacity: 0.7; }
 
 .v5-shell-main .dropdown {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   border-radius: 18px;
   box-shadow: 0 20px 50px -20px rgba(26,18,8,0.25);
@@ -938,7 +966,7 @@ html.v5 body {
 }
 
 .v5-shell-main .chip {
-  background-color: #FFFFFF;
+  background-color: var(--v5-card-bg);
   border: 1px solid var(--v5-paper-2);
   color: var(--v5-ink-2);
 }
