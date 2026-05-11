@@ -27,6 +27,7 @@ const NAKED_PREFIXES = [
   '/v2',      // landing B (marketing variant — dark editorial)
   '/v3',      // landing C (marketing variant — brutalist light)
   '/v4',      // landing D (marketing variant — Linear-style analytics)
+  '/v5',      // landing E (marketing variant — sport editorial w/ video hero)
 ];
 
 function isMarketing(pathname: string): boolean {
