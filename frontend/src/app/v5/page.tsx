@@ -74,17 +74,17 @@ export default function LandingE() {
 function NavBar() {
   return (
     <header className="max-w-[1320px] mx-auto px-5 sm:px-8 py-6 flex items-center justify-between">
-      <Link href="/v5" className="text-[22px] sm:text-[26px] font-bold tracking-[-0.025em]"
+      <Link href="/" className="text-[22px] sm:text-[26px] font-bold tracking-[-0.025em]"
             style={{ fontFamily: 'var(--font-display), Space Grotesk, sans-serif', color: INK }}>
         PELOTITAS<span style={{ color: ORANGE }}>.</span>
       </Link>
       <nav className="hidden md:flex items-center gap-7 text-[13px] font-semibold uppercase tracking-[0.04em]"
            style={{ color: INK }}>
-        <a href="#" className="hover:opacity-60 transition-opacity">Home</a>
-        <a href="#anotador" className="hover:opacity-60 transition-opacity">Anotador</a>
-        <a href="#reservas" className="hover:opacity-60 transition-opacity">Reservas</a>
-        <a href="#facilities" className="hover:opacity-60 transition-opacity">Torneos</a>
-        <a href="#footer" className="hover:opacity-60 transition-opacity">About</a>
+        <Link href="/" className="hover:opacity-60 transition-opacity">Inicio</Link>
+        <Link href="/scoreboards" className="hover:opacity-60 transition-opacity">Anotador</Link>
+        <Link href="/reservations" className="hover:opacity-60 transition-opacity">Reservas</Link>
+        <Link href="/tournaments" className="hover:opacity-60 transition-opacity">Torneos</Link>
+        <Link href="/ranking" className="hover:opacity-60 transition-opacity">Ranking</Link>
       </nav>
       <div className="flex items-center gap-2">
         <Link
@@ -265,7 +265,7 @@ function VideoSlot() {
       {/* Corner chips */}
       <span className="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] font-bold px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(26,18,8,0.65)', color: CREAM, backdropFilter: 'blur(8px)', fontFamily: 'var(--font-mono), monospace' }}>
-        ● LIVE FEED
+        ● EN VIVO
       </span>
       <span className="absolute top-3 right-3 text-[10px] uppercase tracking-[0.2em] font-bold px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(26,18,8,0.65)', color: YELLOW, backdropFilter: 'blur(8px)', fontFamily: 'var(--font-mono), monospace' }}>
@@ -276,7 +276,7 @@ function VideoSlot() {
         className="absolute bottom-3 right-3 text-[9px] uppercase tracking-[0.12em] font-bold px-2 py-0.5 rounded"
         style={{ background: YELLOW, color: INK, fontFamily: 'var(--font-mono), monospace' }}
       >
-        ← VIDEO SLOT · 9:16
+        ← VIDEO AQUÍ · 9:16
       </span>
     </div>
   );
@@ -362,7 +362,7 @@ function SubheroRow() {
           <ProductCard
             theme={{ bg: RED, ink: '#FFFFFF', accent: '#FFC4B5' }}
             eyebrow="JUGADOR"
-            title="MATCH JOURNAL"
+            title="MI HISTORIAL"
             stat="∞"
             statLabel="HISTORIAL"
             art="player"
@@ -370,7 +370,7 @@ function SubheroRow() {
           <ProductCard
             theme={{ bg: PINK, ink: '#3D1F12', accent: '#7A4036' }}
             eyebrow="TORNEOS"
-            title="TENNIS BATS"
+            title="RAQUETAS"
             stat="6"
             statLabel="EVENTOS LIVE"
             art="racket"
@@ -495,11 +495,11 @@ function CardArt({ kind, theme }: { kind: 'grass' | 'player' | 'racket'; theme: 
         <>
           <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
                 style={{ background: '#FFFFFF', color: theme.ink }}>
-            COMFORT
+            CÓMODA
           </span>
           <span className="absolute bottom-2 right-2 text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
                 style={{ background: '#FFFFFF', color: theme.ink }}>
-            STRONG
+            FUERTE
           </span>
         </>
       )}
@@ -732,7 +732,7 @@ function ClosingCTA() {
 function FooterBar() {
   return (
     <footer id="footer" className="px-5 sm:px-8 py-10 max-w-[1320px] mx-auto flex flex-wrap items-center justify-between gap-6">
-      <Link href="/v5" className="text-[18px] font-bold tracking-[-0.025em]" style={{ fontFamily: 'var(--font-display), Space Grotesk, sans-serif', color: INK }}>
+      <Link href="/" className="text-[18px] font-bold tracking-[-0.025em]" style={{ fontFamily: 'var(--font-display), Space Grotesk, sans-serif', color: INK }}>
         PELOTITAS<span style={{ color: ORANGE }}>.</span>
       </Link>
       <p className="text-[11px] uppercase tracking-[0.18em] font-bold opacity-60">
