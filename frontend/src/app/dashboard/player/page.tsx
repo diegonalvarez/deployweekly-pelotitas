@@ -133,77 +133,38 @@ function PlayerDashboard() {
   };
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* V5 Hero brown card */}
-        <section className="v5-hero-card relative">
-          <div className="relative grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10">
-            <div className="relative">
-              <span
-                className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
-                style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}
-              >
-                <span className="block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--v5-orange)' }} />
-                TU PANEL · JUGADOR
-              </span>
-              <h1
-                className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
-                style={{
-                  fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
-                  fontSize: 'clamp(40px, 6vw, 84px)',
-                  color: 'var(--v5-cream)',
-                }}
-              >
-                HOLA,<br />
-                <span style={{ color: 'var(--v5-yellow)' }}>{user.firstName?.toUpperCase()}</span>.
+    <div className="bg-base">
+      {/* ── Page header ─────────────────────── */}
+      <div className="border-b border-border-dark bg-base sticky top-14 z-30 lg:top-0 lg:relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div>
+              <p className="eyebrow text-text-muted">Dashboard</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight-2 mt-1">
+                Hola, <span className="text-brand">{user.firstName}</span>
               </h1>
-              <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
-                Tu próximo partido te toma un tap. Reservá una cancha, sumate a un cupo abierto,
-                o creá un torneo con tus contactos.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center gap-3 pt-5" style={{ borderTop: '1px solid #5C3320' }}>
-                <Link href="/matches" className="inline-flex items-center gap-2 group">
-                  <span className="inline-flex items-center justify-center w-9 h-9 rounded-full" style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}>
-                    <Plus className="w-4 h-4" strokeWidth={3} />
-                  </span>
-                  <span className="text-[12px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--v5-cream)' }}>
-                    CREAR PARTIDO
-                  </span>
-                </Link>
-                {unread > 0 && (
-                  <Link href="/notifications" className="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] px-4 py-2 rounded-full"
-                        style={{ background: 'rgba(255,210,63,0.18)', color: 'var(--v5-yellow)' }}>
-                    <Bell className="w-3.5 h-3.5" /> {unread} nuevas
-                  </Link>
-                )}
-                <Link href="/matchmaking" className="text-[12px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--v5-cream)', opacity: 0.85 }}>
-                  Cupos abiertos →
-                </Link>
-              </div>
-            </div>
-
-            {/* Quick stats panel */}
-            <div className="relative grid grid-cols-2 gap-2.5 self-end">
-              {kpis.slice(0, 4).map((k) => (
-                <div key={k.label} className="rounded-2xl p-3.5"
-                     style={{ background: 'rgba(244,239,230,0.08)', border: '1px solid rgba(244,239,230,0.12)' }}>
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: 'rgba(242,237,222,0.6)', fontFamily: 'var(--font-mono), monospace' }}>
-                    {k.label}
-                  </p>
-                  <p className="text-[28px] font-bold tabular leading-none mt-2 tracking-[-0.04em]"
-                     style={{ fontFamily: 'var(--font-mono), monospace', color: 'var(--v5-cream)' }}>
-                    {k.value}
-                  </p>
-                </div>
-              ))}
             </div>
           </div>
-        </section>
 
-        <div className="space-y-8">
+          <div className="flex items-center gap-2 shrink-0">
+            {unread > 0 && (
+              <Link href="/notifications" className="btn-secondary text-xs h-9 hidden sm:inline-flex">
+                <Bell className="w-3.5 h-3.5" />
+                {unread} nuevas
+              </Link>
+            )}
+            <Link href="/matches" className="btn-primary text-sm h-9">
+              <Plus className="w-3.5 h-3.5" />
+              Crear partido
+            </Link>
+          </div>
+        </div>
+      </div>
 
-        {/* ── KPIs (mobile only, mirrored from hero on desktop) ─────────────────────── */}
-        <div className="grid grid-cols-2 lg:hidden gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+
+        {/* ── KPIs ─────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {kpis.map((k, i) => (
             <div
               key={k.label}

@@ -10,6 +10,10 @@ import AppShell from './AppShell';
    ─────────────────────────────────────────────────────────── */
 const MARKETING_PATHS = [
   '/',
+];
+
+/* Auth pages render naked (no nav) — they have their own v5 layout. */
+const NAKED_AUTH = [
   '/login',
   '/register',
   '/forgot-password',
@@ -42,6 +46,9 @@ function isNaked(pathname: string): boolean {
 export default function LayoutSwitcher({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (isNaked(pathname)) return <>{children}</>;
+  if (NAKED_AUTH.includes(pathname)) {
+    return <main className="v5-shell-main min-h-screen" style={{ background: 'var(--v5-paper)' }}>{children}</main>;
+  }
 
   const marketing = isMarketing(pathname);
 
