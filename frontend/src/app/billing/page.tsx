@@ -93,11 +93,14 @@ function BillingPageInner() {
   if (!user) return null;
 
   const features = [
-    'Controles de privacidad granulares',
-    'Estadísticas avanzadas y trends',
-    'Filtros de búsqueda guardados',
-    'Insignias Pro en tu perfil',
-    'Soporte prioritario',
+    { t: 'Stats avanzados', d: 'Win-rate por torneo, racha activa, head-to-head completo' },
+    { t: 'Historial ilimitado', d: 'Free guarda los últimos 50 partidos; Pro guarda todos' },
+    { t: 'Insignia Pro', d: 'Tu nombre lleva una marca discreta en perfil y rankings' },
+    { t: 'URL propia', d: 'pelotitas.app/p/diegonalvarez — compartible y memorable' },
+    { t: 'Match cards sin marca', d: 'Compartibles a Insta/WhatsApp sin watermark "anotalo en…"' },
+    { t: 'Controles de privacidad', d: 'Ocultá historial, ELO, ciudad — lo que quieras' },
+    { t: 'Filtros de búsqueda guardados', d: 'Vuelve cuando hay reservas que matchean' },
+    { t: 'Soporte prioritario', d: 'Pregunta y te contestamos en 24h' },
   ];
 
   return (
@@ -192,21 +195,24 @@ function BillingPageInner() {
                   Plan Pro
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight-2 mb-2">
-                Desbloqueá todo el potencial.
+              <h2 className="font-display text-2xl sm:text-4xl font-bold text-text-primary tracking-tight-2 mb-2">
+                Pro Player.
               </h2>
               <p className="text-sm text-text-secondary leading-relaxed max-w-lg">
-                Suscribite a <span className="text-brand font-semibold">pelotitas Pro</span>{' '}
-                y accedé a controles de privacidad, métricas avanzadas y más.
+                Para jugadores que entrenan, juegan torneos, y quieren llevar su juego como pro.
+                Stats serios, historial ilimitado y tu propia URL.
               </p>
 
-              <ul className="space-y-2.5 mt-6">
+              <ul className="space-y-3 mt-6">
                 {features.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-text-secondary">
-                    <div className="w-5 h-5 rounded bg-brand/15 text-brand flex items-center justify-center border border-brand/20 shrink-0">
+                  <li key={f.t} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded bg-brand/15 text-brand flex items-center justify-center border border-brand/20 shrink-0 mt-0.5">
                       <Check className="w-3 h-3" strokeWidth={3} />
                     </div>
-                    {f}
+                    <div className="min-w-0">
+                      <p className="text-sm font-display font-semibold text-text-primary">{f.t}</p>
+                      <p className="text-2xs text-text-secondary leading-relaxed">{f.d}</p>
+                    </div>
                   </li>
                 ))}
               </ul>
