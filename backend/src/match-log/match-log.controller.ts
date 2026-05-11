@@ -63,6 +63,14 @@ export class MatchLogController {
     return this.service.findPhantomMentions(userId);
   }
 
+  @Get('rivalries')
+  rivalries(
+    @CurrentUser('id') userId: string,
+    @Query('threshold') threshold?: string,
+  ) {
+    return this.service.myRivalries(userId, threshold ? parseInt(threshold) : 3);
+  }
+
   @Post('phantom-mentions/claim')
   claimPhantomMentions(
     @CurrentUser('id') userId: string,

@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Patch, Param, Body, Query, UseGuards,
+  Controller, Get, Post, Patch, Param, Body, Query, UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -48,6 +48,24 @@ export class UsersController {
       maxLevel: maxLevel ? parseFloat(maxLevel) : undefined,
       page: page ? parseInt(page) : 1,
     });
+  }
+
+  /**
+   * Match a list of E.164 phone numbers against registered users.
+   * Used by the "Import contacts" flow — frontend reads contacts via
+   * the Web Contacts Picker API (or @capacitor/contacts on native),
+   * normalises to E.164, and POSTs the array here. Returns the subset
+   * already on pelotitas plus a "notOnPelotitas" remainder so the UI
+   * can offer an invite link.
+   */
+  @Post('lookup-by-phones')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  lookupByPhones(
+    @CurrentUser('id') userId: string,
+    @Body() body: { phones: string[] },
+  ) {
+    return this.usersService.lookupByPhones(userId, body?.phones || []);
   }
 
   // ─── RANKING ────────────────────────────────────────────

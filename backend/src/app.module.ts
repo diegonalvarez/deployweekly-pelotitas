@@ -19,6 +19,9 @@ import { FeedModule } from './feed/feed.module';
 import { BillingModule } from './billing/billing.module';
 import { MatchLogModule } from './match-log/match-log.module';
 import { ScoreboardModule } from './scoreboard/scoreboard.module';
+import { EloModule } from './elo/elo.module';
+import { PushModule } from './push/push.module';
+import { ClipsModule } from './clips/clips.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { ScoreboardModule } from './scoreboard/scoreboard.module';
     BillingModule,
     MatchLogModule,
     ScoreboardModule,
+    EloModule,
+    PushModule,
+    ClipsModule,
   ],
   providers: [
     {

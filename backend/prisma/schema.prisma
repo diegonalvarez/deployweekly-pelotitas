@@ -294,11 +294,100 @@ model User {
   matchLogParticipations  MatchLogParticipant[]    @relation("MatchLogParticipantUser")
   scoreboards             Scoreboard[]             @relation("ScoreboardOwner")
   scoreboardEvents        ScoreboardEvent[]        @relation("ScoreboardEventAuthor")
+  eloRatings              EloRating[]              @relation("UserEloRatings")
+  reservationJoins        ReservationJoin[]        @relation("ReservationJoiner")
+  deviceTokens            DeviceToken[]            @relation("UserDeviceTokens")
+  matchClips              MatchClip[]              @relation("MatchClipOwner")
 
   @@index([email])
   @@index([phone])
   @@index([googleId])
   @@map("users")
+}
+
+// ─── Device tokens for native push (Capacitor APNs / FCM) ───
+// One row per (user, token) — a user may have multiple devices.
+// On unregister or token rotation, mark with revokedAt and prune.
+
+model DeviceToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserDeviceTokens", fields: [userId], references: [id], onDelete: Cascade)
+  platform  DevicePlatform
+  token     String
+  appVersion String?
+  revokedAt DateTime?
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([userId, token])
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+// ─── ELO ratings — one row per (user, sport) ─────────────────────────
+// Recalculated whenever a Scoreboard transitions to COMPLETED with a
+// known winner. Default starting rating is 1000; K-factor is 32 while
+// matchesCount < 30 (provisional), 16 afterwards.
+
+model EloRating {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("UserEloRatings", fields: [userId], references: [id], onDelete: Cascade)
+  sport        Sport
+  rating       Int      @default(1000)
+  peakRating   Int      @default(1000)
+  matchesCount Int      @default(0)
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  draws        Int      @default(0)
+  lastMatchAt  DateTime?
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, sport])
+  @@index([sport, rating])
+  @@map("elo_ratings")
+}
+
+// ─── Match clips — short video moments from a scoreboard match ───
+// Clip storage is owned by the frontend (uploaded to S3 / Cloudflare
+// Stream / Mux via presigned URLs). The backend only tracks pointers
+// and metadata so we never serve raw video bytes through our API.
+
+model MatchClip {
+  id            String   @id @default(cuid())
+  scoreboardId  String?
+  scoreboard    Scoreboard? @relation(fields: [scoreboardId], references: [id], onDelete: SetNull)
+  ownerId       String
+  owner         User     @relation("MatchClipOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  url           String   // CDN-hosted url (mp4 or HLS playlist)
+  mimeType      String?
+  posterUrl     String?  // optional thumbnail
+  durationMs    Int?
+  // Position inside the scoreboard timeline — e.g. "minute 23 of match"
+  matchOffsetMs Int?
+  label         String?  // freeform: "Smash punto del partido", "Tie-break"
+  visibility    ClipVisibility @default(PRIVATE)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([scoreboardId, createdAt])
+  @@index([ownerId])
+  @@map("match_clips")
+}
+
+enum ClipVisibility {
+  PRIVATE
+  PUBLIC
 }
 
 // ─── PROFILES ───────────────────────────────────────────
@@ -620,10 +709,44 @@ model Reservation {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
+  // ─── Matchmaking — "I have a court, looking for players" ───
+  openForJoin   Boolean @default(false)
+  slotsNeeded   Int     @default(0) // how many more players the owner needs
+  joinLevelMin  String? // optional level/category filter — freeform "B", "3.0", etc.
+  joinLevelMax  String?
+  joinNote      String?
+  joiners       ReservationJoin[]
+
   @@index([courtId, date])
   @@index([userId])
   @@index([status])
+  @@index([openForJoin, date])
   @@map("reservations")
+}
+
+// ─── Players joining an open reservation slot ──────────────────────
+model ReservationJoin {
+  id            String              @id @default(cuid())
+  reservationId String
+  reservation   Reservation         @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                @relation("ReservationJoiner", fields: [userId], references: [id], onDelete: Cascade)
+  status        ReservationJoinStatus @default(PENDING)
+  message       String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([reservationId, userId])
+  @@index([userId])
+  @@index([reservationId, status])
+  @@map("reservation_joins")
+}
+
+enum ReservationJoinStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
 }
 
 // ─── COACHES ───────────────────────────────────────────
@@ -786,6 +909,17 @@ model Tournament {
   rules             String?
   isFree            Boolean          @default(true)
   isBillable        Boolean          @default(false) // Should we charge for this one?
+
+  // ─── Match format ─── (passed to official Scoreboard when created)
+  matchBestOf        Int     @default(3) // 1 | 3 | 5
+  matchGamesPerSet   Int     @default(6)
+  matchTieBreakAt    Int     @default(6) // 0 = no tiebreak
+  matchTieBreakPts   Int     @default(7)
+  matchSuperTbAtLast Boolean @default(false) // Replace last set with super TB to 10
+  matchSuperTbPts    Int     @default(10)
+  matchGoldenPoint   Boolean @default(false) // Padel-style sudden death on deuce
+  matchProSetTo      Int? // If set, play one pro-set to N games instead of bestOf
+
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -1268,6 +1402,7 @@ model Scoreboard {
   notes String?
 
   events ScoreboardEvent[]
+  clips  MatchClip[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

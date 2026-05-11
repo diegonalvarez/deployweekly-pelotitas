@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/date';
 import Link from 'next/link';
 import RoleGuard from '@/components/RoleGuard';
 import ActivateRoleBanner from '@/components/ActivateRoleBanner';
+import RivalriesWidget from '@/components/RivalriesWidget';
 import {
   Trophy,
   CalendarCheck,
@@ -324,6 +325,9 @@ function PlayerDashboard() {
 
           {/* ── RIGHT 1/3 ─── */}
           <div className="space-y-5">
+            {/* Rivalries */}
+            <RivalriesWidget limit={3} />
+
             {/* Player card (ELO/level) */}
             <div className="card-elevated relative overflow-hidden">
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-brand/10 blur-2xl pointer-events-none" />

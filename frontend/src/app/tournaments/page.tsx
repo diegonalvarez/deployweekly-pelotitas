@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { formatDate } from '@/lib/date';
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -62,12 +63,42 @@ export default function TournamentsPage() {
     <div className="min-h-[calc(100vh-4rem)] relative">
       <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-10">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in-up">
-          <h1 className="section-header mb-2">Torneos</h1>
-          <p className="text-text-secondary text-lg">Participa y segui torneos de padel y tenis</p>
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+        {/* V5 Hero */}
+        <section className="v5-hero-card relative">
+          <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10 items-end">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+                    style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}>
+                <span className="block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--v5-orange)' }} />
+                TORNEOS · COMPETÍ
+              </span>
+              <h1 className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
+                  style={{
+                    fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                    fontSize: 'clamp(40px, 6vw, 80px)',
+                    color: 'var(--v5-cream)',
+                  }}>
+                BUSCÁ TU<br />
+                <span style={{ color: 'var(--v5-yellow)' }}>TORNEO</span>.
+              </h1>
+              <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
+                Padel y tenis. Inscribite, mirá el fixture, seguí los resultados en vivo desde el anotador oficial.
+              </p>
+            </div>
+            <div className="self-end">
+              <Link href="/tournaments/create" className="inline-flex items-center gap-2 group">
+                <span className="inline-flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}>
+                  <Plus className="w-5 h-5" strokeWidth={3} />
+                </span>
+                <span className="text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--v5-cream)' }}>
+                  CREAR<br />TORNEO
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>

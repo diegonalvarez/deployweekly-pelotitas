@@ -105,6 +105,12 @@ function CreateTournamentForm() {
   const [pointsPerLoss, setPointsPerLoss] = useState('0');
   const [rules, setRules] = useState('');
 
+  // Match format
+  const [matchBestOf, setMatchBestOf] = useState<3 | 5>(3);
+  const [matchProSetTo, setMatchProSetTo] = useState<number | null>(null); // null = no pro-set
+  const [matchGoldenPoint, setMatchGoldenPoint] = useState(false);
+  const [matchSuperTbAtLast, setMatchSuperTbAtLast] = useState(false);
+
   useEffect(() => {
     api.get<Club[]>('/clubs/mine')
       .then((data) => {
@@ -150,6 +156,11 @@ function CreateTournamentForm() {
       if (pointsPerWin) payload.pointsPerWin = parseInt(pointsPerWin);
       if (pointsPerLoss) payload.pointsPerLoss = parseInt(pointsPerLoss);
       if (rules.trim()) payload.rules = rules.trim();
+
+      payload.matchBestOf = matchBestOf;
+      payload.matchGoldenPoint = matchGoldenPoint;
+      payload.matchSuperTbAtLast = matchSuperTbAtLast;
+      if (matchProSetTo) payload.matchProSetTo = matchProSetTo;
 
       const result = await api.post('/tournaments', payload);
       toast.success('Torneo creado correctamente!');
@@ -366,6 +377,73 @@ function CreateTournamentForm() {
                     value={pointsPerLoss}
                     onChange={(e) => setPointsPerLoss(e.target.value)}
                   />
+                </div>
+              </div>
+
+              {/* Match format */}
+              <div className="pt-2">
+                <p className="eyebrow text-text-muted mb-3">Formato de partido</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  {[
+                    { label: 'Best of 3', value: { bo: 3, pro: null } },
+                    { label: 'Best of 5', value: { bo: 5, pro: null } },
+                    { label: 'Pro set 9', value: { bo: 3, pro: 9 } },
+                    { label: 'Pro set 10', value: { bo: 3, pro: 10 } },
+                  ].map((opt) => {
+                    const active = matchBestOf === opt.value.bo && matchProSetTo === opt.value.pro;
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => {
+                          setMatchBestOf(opt.value.bo as 3 | 5);
+                          setMatchProSetTo(opt.value.pro);
+                        }}
+                        className={`px-3 py-2 rounded-lg font-medium text-xs border transition-all ${
+                          active
+                            ? 'bg-brand text-brand-ink border-brand'
+                            : 'bg-surface-light text-text-secondary border-border-dark hover:border-border-default'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={matchGoldenPoint}
+                      onChange={(e) => setMatchGoldenPoint(e.target.checked)}
+                      className="w-4 h-4 accent-brand"
+                    />
+                    <div>
+                      <p className="text-sm text-text-primary group-hover:text-brand transition-colors">
+                        Punto de oro
+                      </p>
+                      <p className="text-2xs text-text-muted">
+                        Padel-style: en empate (deuce) el siguiente punto define el game
+                      </p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={matchSuperTbAtLast}
+                      onChange={(e) => setMatchSuperTbAtLast(e.target.checked)}
+                      className="w-4 h-4 accent-brand"
+                      disabled={!!matchProSetTo}
+                    />
+                    <div>
+                      <p className={`text-sm ${matchProSetTo ? 'text-text-muted' : 'text-text-primary group-hover:text-brand transition-colors'}`}>
+                        Super tiebreak en el último set
+                      </p>
+                      <p className="text-2xs text-text-muted">
+                        En vez del último set normal, juegan un super tiebreak a 10
+                      </p>
+                    </div>
+                  </label>
                 </div>
               </div>
 

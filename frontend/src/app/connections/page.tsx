@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import ContactImporter from '@/components/ContactImporter';
 
 type Tab = 'received' | 'sent' | 'active';
 
@@ -168,6 +169,11 @@ export default function ConnectionsPage() {
         <div className="mb-8 animate-fade-in-up">
           <h1 className="section-header mb-2">Conexiones</h1>
           <p className="text-text-secondary text-lg">Gestiona tus conexiones con clubes, profesores y jugadores</p>
+        </div>
+
+        {/* Contacts importer */}
+        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '60ms' }}>
+          <ContactImporter />
         </div>
 
         {/* Tabs */}

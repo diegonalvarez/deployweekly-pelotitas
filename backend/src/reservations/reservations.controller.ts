@@ -107,4 +107,63 @@ export class ReservationsController {
   ) {
     return this.reservationsService.cancel(id, userId);
   }
+
+  // ─── Matchmaking — open slots ───────────────────────────
+
+  @Get('open-slots')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findOpenSlots(
+    @CurrentUser('id') userId: string,
+    @Query('clubId') clubId?: string,
+    @Query('sport') sport?: string,
+    @Query('city') city?: string,
+  ) {
+    return this.reservationsService.findOpenSlots({ userId, clubId, sport, city });
+  }
+
+  @Patch(':id/open')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  openForJoin(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() body: {
+      slotsNeeded: number;
+      joinLevelMin?: string;
+      joinLevelMax?: string;
+      joinNote?: string;
+    },
+  ) {
+    return this.reservationsService.openForJoin(id, userId, body);
+  }
+
+  @Patch(':id/close')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  closeForJoin(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.reservationsService.closeForJoin(id, userId);
+  }
+
+  @Post(':id/join')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  requestJoin(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() body: { message?: string },
+  ) {
+    return this.reservationsService.requestJoin(id, userId, body?.message);
+  }
+
+  @Patch('joins/:joinId/respond')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  respondJoin(
+    @Param('joinId') joinId: string,
+    @CurrentUser('id') userId: string,
+    @Body() body: { accept: boolean },
+  ) {
+    return this.reservationsService.respondJoin(joinId, userId, !!body?.accept);
+  }
 }

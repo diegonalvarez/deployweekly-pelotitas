@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -67,6 +68,12 @@ export class ReservationsService {
       where,
       include: {
         court: { include: { club: { select: { id: true, name: true } } } },
+        joiners: {
+          where: { status: { in: ['PENDING', 'ACCEPTED'] } },
+          include: {
+            user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+        },
       },
       orderBy: { date: 'desc' },
     });
@@ -392,5 +399,173 @@ export class ReservationsService {
         },
       });
     }
+  }
+
+  /* ─── Matchmaking: open slots ──────────────────────────────
+   * The reservation owner publishes "looking for N more players" and
+   * other users with the right sport/level can request to join.
+   * ──────────────────────────────────────────────────────── */
+
+  async openForJoin(
+    reservationId: string,
+    userId: string,
+    body: { slotsNeeded: number; joinLevelMin?: string; joinLevelMax?: string; joinNote?: string },
+  ) {
+    if (!body.slotsNeeded || body.slotsNeeded < 1 || body.slotsNeeded > 6) {
+      throw new BadRequestException('slotsNeeded debe estar entre 1 y 6');
+    }
+    const r = await this.prisma.reservation.findUnique({ where: { id: reservationId } });
+    if (!r) throw new NotFoundException('Reserva no encontrada');
+    if (r.userId !== userId) throw new ForbiddenException('Solo el dueño de la reserva puede abrir cupos');
+    if (r.status === 'CANCELLED') throw new BadRequestException('Reserva cancelada');
+
+    return this.prisma.reservation.update({
+      where: { id: reservationId },
+      data: {
+        openForJoin: true,
+        slotsNeeded: body.slotsNeeded,
+        joinLevelMin: body.joinLevelMin ?? null,
+        joinLevelMax: body.joinLevelMax ?? null,
+        joinNote: body.joinNote ?? null,
+      },
+      include: { joiners: { include: { user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } } } } },
+    });
+  }
+
+  async closeForJoin(reservationId: string, userId: string) {
+    const r = await this.prisma.reservation.findUnique({ where: { id: reservationId } });
+    if (!r) throw new NotFoundException('Reserva no encontrada');
+    if (r.userId !== userId) throw new ForbiddenException('Solo el dueño puede cerrar cupos');
+    return this.prisma.reservation.update({
+      where: { id: reservationId },
+      data: { openForJoin: false, slotsNeeded: 0 },
+    });
+  }
+
+  async findOpenSlots(filters: { userId: string; clubId?: string; sport?: string; city?: string }) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.prisma.reservation.findMany({
+      where: {
+        openForJoin: true,
+        slotsNeeded: { gt: 0 },
+        status: { not: 'CANCELLED' },
+        date: { gte: today },
+        userId: { not: filters.userId },
+        ...(filters.sport ? { sport: filters.sport as any } : {}),
+        ...(filters.clubId ? { court: { is: { clubId: filters.clubId } } } : {}),
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      include: {
+        user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+        court: {
+          select: {
+            id: true, name: true,
+            club: { select: { id: true, name: true } },
+          },
+        },
+        joiners: {
+          where: { status: { in: ['PENDING', 'ACCEPTED'] } },
+          select: {
+            id: true, status: true, userId: true,
+            user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+        },
+      },
+      take: 100,
+    });
+  }
+
+  async requestJoin(reservationId: string, userId: string, message?: string) {
+    const r = await this.prisma.reservation.findUnique({
+      where: { id: reservationId },
+      select: { id: true, userId: true, openForJoin: true, slotsNeeded: true, status: true, date: true, startTime: true, court: { select: { name: true, club: { select: { name: true } } } } },
+    });
+    if (!r) throw new NotFoundException('Reserva no encontrada');
+    if (r.status === 'CANCELLED') throw new BadRequestException('Reserva cancelada');
+    if (!r.openForJoin || r.slotsNeeded < 1) throw new BadRequestException('Esta reserva no tiene cupos abiertos');
+    if (r.userId === userId) throw new BadRequestException('No podés anotarte a tu propia reserva');
+
+    const existing = await this.prisma.reservationJoin.findUnique({
+      where: { reservationId_userId: { reservationId, userId } },
+    });
+    if (existing) {
+      if (existing.status === 'PENDING' || existing.status === 'ACCEPTED') {
+        throw new BadRequestException('Ya tenés una solicitud activa');
+      }
+      return this.prisma.reservationJoin.update({
+        where: { id: existing.id },
+        data: { status: 'PENDING', message: message ?? null },
+      });
+    }
+
+    const join = await this.prisma.reservationJoin.create({
+      data: { reservationId, userId, message: message ?? null },
+      include: { user: { select: { id: true, firstName: true, lastName: true } } },
+    });
+
+    // Notify the reservation owner
+    try {
+      await this.prisma.notification.create({
+        data: {
+          userId: r.userId,
+          type: 'RESERVATION_CREATED',
+          title: 'Alguien quiere sumarse',
+          message: `${join.user.firstName} ${join.user.lastName} se anotó para tu turno en ${r.court.club.name}${r.court.name ? ' · ' + r.court.name : ''}`,
+          data: { reservationId, joinId: join.id },
+        },
+      });
+    } catch {/* notif schema may differ — non-fatal */}
+
+    return join;
+  }
+
+  async respondJoin(joinId: string, ownerUserId: string, accept: boolean) {
+    const join = await this.prisma.reservationJoin.findUnique({
+      where: { id: joinId },
+      include: { reservation: true, user: { select: { id: true, firstName: true } } },
+    });
+    if (!join) throw new NotFoundException('Solicitud no encontrada');
+    if (join.reservation.userId !== ownerUserId) throw new ForbiddenException('Solo el dueño puede responder');
+
+    const newStatus = accept ? 'ACCEPTED' : 'DECLINED';
+    const updated = await this.prisma.reservationJoin.update({
+      where: { id: joinId },
+      data: { status: newStatus },
+    });
+
+    if (accept) {
+      // Decrement slots; close if zero.
+      await this.prisma.reservation.update({
+        where: { id: join.reservationId },
+        data: {
+          slotsNeeded: { decrement: 1 },
+        },
+      });
+      const refreshed = await this.prisma.reservation.findUnique({ where: { id: join.reservationId } });
+      if (refreshed && refreshed.slotsNeeded <= 0) {
+        await this.prisma.reservation.update({
+          where: { id: join.reservationId },
+          data: { openForJoin: false, slotsNeeded: 0 },
+        });
+      }
+    }
+
+    try {
+      await this.prisma.notification.create({
+        data: {
+          userId: join.userId,
+          type: 'RESERVATION_CREATED',
+          title: accept ? 'Sumaste a un partido' : 'No quedaste en el partido',
+          message: accept
+            ? 'El dueño te aceptó en su reserva'
+            : 'El dueño no aceptó tu pedido para esta reserva',
+          data: { reservationId: join.reservationId, joinId: join.id },
+        },
+      });
+    } catch {/* */}
+
+    return updated;
   }
 }

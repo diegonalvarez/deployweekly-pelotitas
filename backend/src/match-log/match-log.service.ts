@@ -7,10 +7,11 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMatchLogDto, UpdateMatchLogDto, MatchLogParticipantDto } from './dto/match-log.dto';
 import { Sport, MatchLogSide, Prisma } from '@prisma/client';
+import { EloService } from '../elo/elo.service';
 
 @Injectable()
 export class MatchLogService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private elo: EloService) {}
 
   /* ─── CREATE ───────────────────────────────────────────── */
   async create(ownerId: string, dto: CreateMatchLogDto) {
@@ -20,7 +21,7 @@ export class MatchLogService {
 
     const isLinkedToTournament = !!dto.tournamentMatchId;
 
-    return this.prisma.matchLogEntry.create({
+    const entry = await this.prisma.matchLogEntry.create({
       data: {
         ownerId,
         matchId: dto.matchId,
@@ -42,6 +43,32 @@ export class MatchLogService {
       },
       include: this.fullInclude(),
     });
+
+    // ELO update — only fire on singles (1 partner side-A or none, 1 opponent
+    // with a registered userId) with a definitive result. Avoids inflating
+    // ratings with phantom or doubles matches in this first pass.
+    await this.maybeApplyEloFromEntry(entry, ownerId);
+
+    return entry;
+  }
+
+  /** Best-effort ELO update — silently no-ops if conditions aren't met. */
+  private async maybeApplyEloFromEntry(
+    entry: { id: string; sport: Sport; result: any; date: Date; participants: any[] },
+    ownerId: string,
+  ): Promise<void> {
+    if (!entry.result) return;
+    const partners = entry.participants.filter((p) => p.side === MatchLogSide.PARTNER);
+    const opponents = entry.participants.filter((p) => p.side === MatchLogSide.OPPONENT);
+    if (partners.length > 0) return; // doubles — defer
+    if (opponents.length !== 1) return;
+    const opp = opponents[0];
+    if (!opp.userId || opp.userId === ownerId) return;
+    try {
+      await this.elo.applySinglesResult(ownerId, opp.userId, entry.sport, entry.result, entry.date);
+    } catch {
+      /* don't break match-log create on elo failure */
+    }
   }
 
   /* ─── LIST (mine) ──────────────────────────────────────── */
@@ -233,6 +260,81 @@ export class MatchLogService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /* ─── RIVALRIES ────────────────────────────────────────────
+   * Computes "rivalries" at runtime: any registered opponent with whom
+   * the user has at least `threshold` matches logged. Includes record
+   * (won/lost/drew) from the user's perspective and last meet date.
+   * No schema change required.
+   * ──────────────────────────────────────────────────────── */
+  async myRivalries(userId: string, threshold = 3) {
+    const entries = await this.prisma.matchLogEntry.findMany({
+      where: {
+        ownerId: userId,
+        participants: { some: { side: MatchLogSide.OPPONENT, userId: { not: null } } },
+      },
+      select: {
+        id: true,
+        date: true,
+        result: true,
+        sport: true,
+        participants: {
+          where: { side: MatchLogSide.OPPONENT, userId: { not: null } },
+          select: {
+            userId: true,
+            user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    type Bucket = {
+      user: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
+      won: number;
+      lost: number;
+      draw: number;
+      total: number;
+      lastMeet: Date;
+      sports: Set<string>;
+    };
+    const byOpponent = new Map<string, Bucket>();
+
+    for (const e of entries) {
+      for (const p of e.participants) {
+        if (!p.userId || !p.user) continue;
+        const key = p.userId;
+        const existing = byOpponent.get(key) ?? {
+          user: p.user,
+          won: 0, lost: 0, draw: 0, total: 0,
+          lastMeet: e.date,
+          sports: new Set<string>(),
+        };
+        existing.total += 1;
+        existing.sports.add(e.sport);
+        if (e.result === 'WON') existing.won += 1;
+        else if (e.result === 'LOST') existing.lost += 1;
+        else if (e.result === 'DRAW') existing.draw += 1;
+        // entries are ordered desc — first time we see a key is the most recent
+        if (e.date > existing.lastMeet) existing.lastMeet = e.date;
+        byOpponent.set(key, existing);
+      }
+    }
+
+    return Array.from(byOpponent.values())
+      .filter((r) => r.total >= threshold)
+      .sort((a, b) => b.total - a.total || +new Date(b.lastMeet) - +new Date(a.lastMeet))
+      .map((r) => ({
+        opponent: r.user,
+        total: r.total,
+        won: r.won,
+        lost: r.lost,
+        draw: r.draw,
+        lastMeet: r.lastMeet,
+        sports: Array.from(r.sports),
+        winRate: r.total > 0 ? Math.round((r.won / r.total) * 100) : 0,
+      }));
   }
 
   async claimPhantomMentions(userId: string, participantIds: string[]) {

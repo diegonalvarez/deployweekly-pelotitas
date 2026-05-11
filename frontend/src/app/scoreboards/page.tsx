@@ -69,23 +69,42 @@ export default function ScoreboardsListPage() {
   const done = list.filter((s) => s.status === 'COMPLETED' || s.status === 'ABANDONED');
 
   return (
-    <div className="bg-base">
-      <div className="border-b border-border-dark bg-base sticky top-14 z-30 lg:top-0 lg:relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <p className="eyebrow text-text-muted">Tu juego</p>
-            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight-2 mt-1">
-              Anotadores
-            </h1>
-          </div>
-          <button onClick={() => setCreateOpen(true)} className="btn-primary text-sm h-9">
-            <Plus className="w-3.5 h-3.5" />
-            Nuevo anotador
-          </button>
-        </div>
-      </div>
-
+    <div>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* V5 Hero */}
+        <section className="v5-hero-card relative">
+          <div className="grid lg:grid-cols-[1.5fr_auto] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10 items-end">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+                    style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}>
+                <span className="block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--v5-orange)' }} />
+                ANOTADORES
+              </span>
+              <h1 className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
+                  style={{
+                    fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                    fontSize: 'clamp(40px, 6vw, 80px)',
+                    color: 'var(--v5-cream)',
+                  }}>
+                ANOTÁ<br />
+                <span style={{ color: 'var(--v5-yellow)' }}>EN VIVO</span>.
+              </h1>
+              <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
+                Punto por punto. Audit log de cada cambio. Doubles, golden point, super tiebreak —
+                listo para apoyar el celu al lado de la cancha.
+              </p>
+            </div>
+            <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 group self-end">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}>
+                <Plus className="w-5 h-5" strokeWidth={3} />
+              </span>
+              <span className="text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--v5-cream)' }}>
+                NUEVO<br />ANOTADOR
+              </span>
+            </button>
+          </div>
+        </section>
+
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => <div key={i} className="card animate-pulse h-24" />)}
@@ -212,23 +231,45 @@ function CreateScoreboardModal({
 }) {
   const [form, setForm] = useState({
     sport: 'PADEL' as Sport,
-    homeLabel: '',
-    awayLabel: '',
+    isDoubles: false,
+    homeA: '',
+    homeB: '',
+    awayA: '',
+    awayB: '',
     scoringMode: 'STANDARD' as 'STANDARD' | 'GOLDEN_POINT',
     totalSets: 3,
     superTieBreak: false,
   });
   const [saving, setSaving] = useState(false);
 
+  const buildLabel = (a: string, b: string) =>
+    form.isDoubles
+      ? [a.trim(), b.trim()].filter(Boolean).join(' / ')
+      : a.trim();
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.homeLabel.trim() || !form.awayLabel.trim()) {
+    const homeLabel = buildLabel(form.homeA, form.homeB);
+    const awayLabel = buildLabel(form.awayA, form.awayB);
+    if (!homeLabel || !awayLabel) {
       toast.error('Cargá ambos lados');
+      return;
+    }
+    if (form.isDoubles && (!form.homeB.trim() || !form.awayB.trim())) {
+      toast.error('Falta una pareja');
       return;
     }
     setSaving(true);
     try {
-      const res = await api.post<{ id: string }>('/scoreboards', form);
+      const payload = {
+        sport: form.sport,
+        homeLabel,
+        awayLabel,
+        scoringMode: form.scoringMode,
+        totalSets: form.totalSets,
+        superTieBreak: form.superTieBreak,
+      };
+      const res = await api.post<{ id: string }>('/scoreboards', payload);
       onCreated(res.id);
     } catch (err: any) {
       toast.error(err.message || 'Error al crear anotador');
@@ -251,26 +292,73 @@ function CreateScoreboardModal({
         </header>
 
         <div className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Local</label>
-              <input
-                className="input"
-                value={form.homeLabel}
-                onChange={(e) => setForm({ ...form, homeLabel: e.target.value })}
-                placeholder="Diego / Juan"
-                required
-              />
+          {/* Modality toggle: singles / doubles */}
+          <div>
+            <label className="label">Modalidad</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { v: false, l: 'Singles', sub: '1 vs 1' },
+                { v: true, l: 'Dobles', sub: '2 vs 2' },
+              ].map((opt) => {
+                const active = form.isDoubles === opt.v;
+                return (
+                  <button
+                    key={String(opt.v)}
+                    type="button"
+                    onClick={() => setForm({ ...form, isDoubles: opt.v })}
+                    className={`h-12 rounded-lg text-xs font-medium border transition-all flex flex-col items-center justify-center gap-0.5 ${
+                      active
+                        ? 'bg-brand text-brand-ink border-brand'
+                        : 'bg-surface-light text-text-secondary border-border-dark hover:border-border-default'
+                    }`}
+                  >
+                    <span className="font-semibold text-sm">{opt.l}</span>
+                    <span className="font-mono text-2xs uppercase tracking-widest opacity-70">{opt.sub}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div>
-              <label className="label">Visitante</label>
+          </div>
+
+          {/* Player names — 2 inputs per side if doubles */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="label">Local {form.isDoubles && <span className="text-text-muted normal-case tracking-normal">· pareja</span>}</label>
               <input
                 className="input"
-                value={form.awayLabel}
-                onChange={(e) => setForm({ ...form, awayLabel: e.target.value })}
-                placeholder="Lucas / Pablo"
+                value={form.homeA}
+                onChange={(e) => setForm({ ...form, homeA: e.target.value })}
+                placeholder={form.isDoubles ? 'Diego' : 'Diego'}
                 required
               />
+              {form.isDoubles && (
+                <input
+                  className="input"
+                  value={form.homeB}
+                  onChange={(e) => setForm({ ...form, homeB: e.target.value })}
+                  placeholder="Juan"
+                  required
+                />
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="label">Visitante {form.isDoubles && <span className="text-text-muted normal-case tracking-normal">· pareja</span>}</label>
+              <input
+                className="input"
+                value={form.awayA}
+                onChange={(e) => setForm({ ...form, awayA: e.target.value })}
+                placeholder={form.isDoubles ? 'Lucas' : 'Lucas'}
+                required
+              />
+              {form.isDoubles && (
+                <input
+                  className="input"
+                  value={form.awayB}
+                  onChange={(e) => setForm({ ...form, awayB: e.target.value })}
+                  placeholder="Pablo"
+                  required
+                />
+              )}
             </div>
           </div>
 

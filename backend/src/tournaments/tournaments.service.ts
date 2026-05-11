@@ -63,6 +63,15 @@ export class TournamentsService {
         pointsPerWalkover: dto.pointsPerWalkover ?? 1,
         tiebreakers: dto.tiebreakers || ['POINTS', 'SET_DIFF', 'GAME_DIFF', 'HEAD_TO_HEAD'],
         rules: dto.rules,
+        // Match format
+        matchBestOf:        dto.matchBestOf        ?? 3,
+        matchGamesPerSet:   dto.matchGamesPerSet   ?? 6,
+        matchTieBreakAt:    dto.matchTieBreakAt    ?? 6,
+        matchTieBreakPts:   dto.matchTieBreakPts   ?? 7,
+        matchSuperTbAtLast: dto.matchSuperTbAtLast ?? false,
+        matchSuperTbPts:    dto.matchSuperTbPts    ?? 10,
+        matchGoldenPoint:   dto.matchGoldenPoint   ?? false,
+        matchProSetTo:      dto.matchProSetTo      ?? null,
       },
     });
   }

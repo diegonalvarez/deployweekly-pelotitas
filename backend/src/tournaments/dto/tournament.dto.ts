@@ -66,6 +66,16 @@ export class CreateTournamentDto {
   @IsOptional()
   @IsString()
   rules?: string;
+
+  // ── Match format ──
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchBestOf?: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchGamesPerSet?: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchTieBreakAt?: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchTieBreakPts?: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsBoolean() matchSuperTbAtLast?: boolean;
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchSuperTbPts?: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsBoolean() matchGoldenPoint?: boolean;
+  @ApiProperty({ required: false }) @IsOptional() @IsInt() matchProSetTo?: number;
 }
 
 export class CreateCategoryDto {

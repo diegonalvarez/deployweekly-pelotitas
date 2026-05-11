@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import '@/styles/globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { LocationProvider } from '@/lib/location';
@@ -8,6 +8,7 @@ import LayoutSwitcher from '@/components/layout/LayoutSwitcher';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import InstallPrompt from '@/components/InstallPrompt';
 import PWARegister from '@/components/PWARegister';
+import PushRegistrar from '@/components/PushRegistrar';
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
@@ -20,6 +21,13 @@ const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-mono',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-display',
 });
 
 export const metadata: Metadata = {
@@ -57,8 +65,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`dark ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="es" className={`dark ${inter.variable} ${jetbrains.variable} ${spaceGrotesk.variable}`}>
       <head>
+        {/* Inline theme bootstrap to avoid flash of wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=sessionStorage.getItem('v5-theme');var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var d=t==='dark'||(!t&&m);if(d)document.documentElement.classList.add('v5-dark');}catch(e){}})();`,
+          }}
+        />
         {/* iOS — Add to Home Screen experience */}
         <link rel="apple-touch-icon" href="/icon.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -74,6 +88,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-base text-text-primary`}>
         <PWARegister />
         <AuthProvider>
+          <PushRegistrar />
           <SubscriptionProvider>
             <LocationProvider>
               <EmailVerificationBanner />
