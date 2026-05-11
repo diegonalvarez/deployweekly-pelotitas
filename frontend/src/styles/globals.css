@@ -11,6 +11,23 @@
   --sky-rgb:     107, 169, 255;  /* #6BA9FF — padel/info  */
   --base-rgb:    10, 14, 20;     /* #0A0E14 */
   --surface-rgb: 17, 22, 31;     /* #11161F */
+
+  /* ─── V5 tokens — Flonea/Olga inspired internal pages ─── */
+  --v5-paper:        #F4EFE6;
+  --v5-paper-2:      #EBE4D5;
+  --v5-ink:          #1A1208;
+  --v5-ink-2:        #4F3924;
+  --v5-brown:        #3B1F0F;
+  --v5-brown-2:      #2A1408;
+  --v5-cream:        #F2EDDE;
+  --v5-yellow:       #FFD23F;
+  --v5-orange:       #FF7A3D;
+  --v5-lime:         #DCEC9D;
+  --v5-lime-ink:     #2E3B0A;
+  --v5-red:          #E04A3C;
+  --v5-pink:         #EFD2D2;
+  --v5-blue:         #2A6BB0;
+  --v5-sky:          #A6D4F2;
 }
 
 @layer base {
@@ -481,4 +498,247 @@
 /* Subtle inset border for sections */
 .section-divider {
   border-top: 1px solid #1E2532;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V5 — Internal pages redesign system
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Body override when v5 layout is active */
+html.v5,
+html.v5 body {
+  background: var(--v5-paper);
+  color: var(--v5-ink);
+}
+html.v5 body {
+  background-image: none;
+}
+
+/* Paper grain — applied via ::before to a page wrapper */
+.v5-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+/* Display chunky title — Flonea style */
+.v5-display {
+  font-family: var(--font-display), 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  color: var(--v5-ink);
+}
+
+/* Mono caption / eyebrow */
+.v5-eyebrow {
+  font-family: var(--font-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--v5-ink-2);
+}
+
+/* Brown rounded "hero" card — main page hero wrapper */
+.v5-hero-card {
+  position: relative;
+  border-radius: 28px;
+  background: var(--v5-brown);
+  color: var(--v5-cream);
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .v5-hero-card { border-radius: 36px; }
+}
+
+/* Pastel surface card with light shadow */
+.v5-card {
+  background: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 24px;
+  padding: 1.25rem;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.v5-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -18px rgba(26,18,8,0.18);
+}
+
+.v5-card-lime  { background: var(--v5-lime);  color: var(--v5-lime-ink); border-color: transparent; }
+.v5-card-red   { background: var(--v5-red);   color: #FFFFFF; border-color: transparent; }
+.v5-card-pink  { background: var(--v5-pink);  color: var(--v5-brown); border-color: transparent; }
+.v5-card-blue  { background: var(--v5-blue);  color: #FFFFFF; border-color: transparent; }
+.v5-card-cream { background: var(--v5-cream); color: var(--v5-ink); border-color: transparent; }
+.v5-card-ink   { background: var(--v5-ink);   color: var(--v5-cream); border-color: transparent; }
+
+/* Orange ball CTA — Flonea signature button */
+.v5-btn-orange {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--v5-orange);
+  background: transparent;
+  color: var(--v5-ink);
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background-color 200ms ease;
+  min-height: 44px;
+}
+.v5-btn-orange:hover { background: rgba(255,122,61,0.08); }
+.v5-btn-orange .v5-btn-orange__ball {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--v5-orange);
+  color: var(--v5-ink);
+}
+
+/* Primary filled (yellow) */
+.v5-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1.125rem;
+  border-radius: 999px;
+  background: var(--v5-ink);
+  color: var(--v5-cream);
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-height: 44px;
+  transition: opacity 200ms ease;
+}
+.v5-btn-primary:hover { opacity: 0.9; }
+
+.v5-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--v5-paper-2);
+  color: var(--v5-ink-2);
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-height: 44px;
+  transition: background-color 200ms ease;
+}
+.v5-btn-ghost:hover { background: rgba(26,18,8,0.04); }
+
+/* Pill / chip for tags */
+.v5-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: var(--v5-paper-2);
+  color: var(--v5-ink-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.v5-chip-brown  { background: rgba(59,31,15,0.12);  color: var(--v5-brown); }
+.v5-chip-yellow { background: var(--v5-yellow);     color: var(--v5-ink); }
+.v5-chip-orange { background: var(--v5-orange);     color: var(--v5-ink); }
+.v5-chip-blue   { background: var(--v5-blue);       color: #FFFFFF; }
+.v5-chip-lime   { background: var(--v5-lime);       color: var(--v5-lime-ink); }
+
+/* Stat tile — used in dashboards, profile, ranking */
+.v5-stat {
+  background: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 22px;
+  padding: 1rem 1.25rem;
+}
+.v5-stat-eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--v5-ink-2);
+  opacity: 0.75;
+}
+.v5-stat-value {
+  font-family: var(--font-mono), monospace;
+  font-size: 36px;
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--v5-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section heading helper */
+.v5-section-head {
+  font-size: clamp(28px, 4vw, 48px);
+}
+
+/* Notch corner — top-right indent helper */
+.v5-notch::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 56px; height: 56px;
+  background:
+    radial-gradient(circle at 0% 100%, transparent 56px, var(--v5-paper) 56px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Input v5 */
+.v5-input {
+  width: 100%;
+  padding: 0.875rem 1.125rem;
+  background: #FFFFFF;
+  border: 1.5px solid var(--v5-paper-2);
+  border-radius: 14px;
+  color: var(--v5-ink);
+  font-size: 14px;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  min-height: 44px;
+}
+.v5-input:focus {
+  outline: none;
+  border-color: var(--v5-orange);
+  box-shadow: 0 0 0 3px rgba(255,122,61,0.12);
+}
+.v5-input::placeholder { color: rgba(26,18,8,0.4); }
+
+/* Mobile bottom nav (Capacitor-aware) */
+.v5-mobile-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--v5-brown);
+  color: var(--v5-cream);
+  z-index: 40;
+  padding: 12px env(safe-area-inset-right) calc(12px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -8px 40px -10px rgba(0,0,0,0.25);
 }
