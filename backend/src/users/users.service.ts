@@ -736,4 +736,29 @@ export class UsersService {
     const notOnPelotitas = capped.filter((p) => !matchedPhones.has(p));
     return { matched: users, notOnPelotitas };
   }
+
+  /** Find a single user by phone, email, or nationalId. Each lookup hits a
+   *  @unique column. Returns null when not found (so callers can offer to
+   *  invite by phone / email instead). Never returns the caller themself. */
+  async findByIdentity(
+    currentUserId: string,
+    q: { phone?: string; email?: string; nationalId?: string },
+  ) {
+    const where: any[] = [];
+    if (q.phone)      where.push({ phone: q.phone });
+    if (q.email)      where.push({ email: q.email.toLowerCase().trim() });
+    if (q.nationalId) where.push({ nationalId: q.nationalId.trim() });
+    if (where.length === 0) return { user: null, queried: q };
+
+    const user = await this.prisma.user.findFirst({
+      where: { OR: where, deletedAt: null, id: { not: currentUserId } },
+      select: {
+        id: true, firstName: true, lastName: true, avatarUrl: true,
+        phone: true, email: true, nationalId: true,
+        identityStatus: true,
+        playerProfile: { select: { padelCategory: true, tennisCategory: true } },
+      },
+    });
+    return { user, queried: q };
+  }
 }

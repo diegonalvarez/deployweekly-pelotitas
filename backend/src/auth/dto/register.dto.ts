@@ -24,6 +24,16 @@ export class RegisterDto {
   @IsString()
   phone?: string;
 
+  @ApiProperty({ required: false, description: 'Documento de identidad (DNI/CI/Pasaporte) — único' })
+  @IsOptional()
+  @IsString()
+  nationalId?: string;
+
+  @ApiProperty({ required: false, description: 'Tipo de documento: DNI | CI | PASSPORT | RUT' })
+  @IsOptional()
+  @IsString()
+  nationalIdType?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

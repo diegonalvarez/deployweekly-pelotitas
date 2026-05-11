@@ -240,6 +240,8 @@ model User {
   firstName       String
   lastName        String
   phone           String?      @unique
+  nationalId      String?      @unique // DNI / passport / national document — unique, optional at register
+  nationalIdType  String?      // "DNI" | "PASSPORT" | "CI" | "RUT" — freeform 2-letter code
   avatarUrl       String?
   roles           UserRole[]   @default([]) // Empty until user activates profiles
   isActive        Boolean      @default(true)

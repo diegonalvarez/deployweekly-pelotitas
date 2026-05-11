@@ -32,6 +32,11 @@ export class AuthService {
       if (phoneExists) throw new ConflictException('Phone already registered');
     }
 
+    if (dto.nationalId) {
+      const nidExists = await this.prisma.user.findUnique({ where: { nationalId: dto.nationalId } });
+      if (nidExists) throw new ConflictException('Documento ya registrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
     // If any location info was provided at register, eagerly create the
@@ -66,6 +71,8 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,
+        nationalId: dto.nationalId,
+        nationalIdType: dto.nationalIdType,
         roles: [], // Empty — user activates profiles later
         playerProfile: playerProfileCreate,
       },

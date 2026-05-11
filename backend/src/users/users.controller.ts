@@ -68,6 +68,18 @@ export class UsersController {
     return this.usersService.lookupByPhones(userId, body?.phones || []);
   }
 
+  /** Unified identity lookup — by phone (E.164), email, or nationalId.
+   *  Used to find a player to invite to a tournament team. */
+  @Post('find-by-identity')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findByIdentity(
+    @CurrentUser('id') userId: string,
+    @Body() body: { phone?: string; email?: string; nationalId?: string },
+  ) {
+    return this.usersService.findByIdentity(userId, body || {});
+  }
+
   // ─── RANKING ────────────────────────────────────────────
 
   @Get('ranking')
