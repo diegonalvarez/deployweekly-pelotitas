@@ -297,6 +297,7 @@ model User {
   eloRatings              EloRating[]              @relation("UserEloRatings")
   reservationJoins        ReservationJoin[]        @relation("ReservationJoiner")
   deviceTokens            DeviceToken[]            @relation("UserDeviceTokens")
+  matchClips              MatchClip[]              @relation("MatchClipOwner")
 
   @@index([email])
   @@index([phone])
@@ -353,6 +354,40 @@ model EloRating {
   @@unique([userId, sport])
   @@index([sport, rating])
   @@map("elo_ratings")
+}
+
+// ─── Match clips — short video moments from a scoreboard match ───
+// Clip storage is owned by the frontend (uploaded to S3 / Cloudflare
+// Stream / Mux via presigned URLs). The backend only tracks pointers
+// and metadata so we never serve raw video bytes through our API.
+
+model MatchClip {
+  id            String   @id @default(cuid())
+  scoreboardId  String?
+  scoreboard    Scoreboard? @relation(fields: [scoreboardId], references: [id], onDelete: SetNull)
+  ownerId       String
+  owner         User     @relation("MatchClipOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  url           String   // CDN-hosted url (mp4 or HLS playlist)
+  mimeType      String?
+  posterUrl     String?  // optional thumbnail
+  durationMs    Int?
+  // Position inside the scoreboard timeline — e.g. "minute 23 of match"
+  matchOffsetMs Int?
+  label         String?  // freeform: "Smash punto del partido", "Tie-break"
+  visibility    ClipVisibility @default(PRIVATE)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([scoreboardId, createdAt])
+  @@index([ownerId])
+  @@map("match_clips")
+}
+
+enum ClipVisibility {
+  PRIVATE
+  PUBLIC
 }
 
 // ─── PROFILES ───────────────────────────────────────────
@@ -1367,6 +1402,7 @@ model Scoreboard {
   notes String?
 
   events ScoreboardEvent[]
+  clips  MatchClip[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

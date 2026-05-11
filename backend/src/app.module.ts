@@ -21,6 +21,7 @@ import { MatchLogModule } from './match-log/match-log.module';
 import { ScoreboardModule } from './scoreboard/scoreboard.module';
 import { EloModule } from './elo/elo.module';
 import { PushModule } from './push/push.module';
+import { ClipsModule } from './clips/clips.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PushModule } from './push/push.module';
     ScoreboardModule,
     EloModule,
     PushModule,
+    ClipsModule,
   ],
   providers: [
     {
