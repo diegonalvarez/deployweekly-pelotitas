@@ -73,16 +73,50 @@ export default function MatchmakingPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <div className="mb-8">
-        <p className="eyebrow text-text-muted mb-2">Matchmaking</p>
-        <h1 className="section-header mb-3">Buscar partido</h1>
-        <p className="text-sm text-text-secondary max-w-xl leading-relaxed">
-          Turnos reservados a los que les faltan jugadores. Si te sumás, el dueño tiene
-          que aceptar el pedido. Para abrir cupos en tu propia reserva, andá a{' '}
-          <Link href="/reservations" className="text-brand underline">Mis reservas</Link>.
-        </p>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      {/* V5 Hero */}
+      <section className="v5-hero-card relative">
+        <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+                  style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}>
+              <span className="block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--v5-orange)' }} />
+              MATCHMAKING · LIVE
+            </span>
+            <h1 className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
+                style={{
+                  fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                  fontSize: 'clamp(40px, 6vw, 80px)',
+                  color: 'var(--v5-cream)',
+                }}>
+              FALTAN<br />
+              <span style={{ color: 'var(--v5-yellow)' }}>JUGADORES</span>.
+            </h1>
+            <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
+              Turnos reservados con cupos abiertos. Anotate al que te cierre y el dueño te acepta.
+              Para abrir cupos en tu reserva andá a{' '}
+              <Link href="/reservations" style={{ color: 'var(--v5-yellow)', textDecoration: 'underline' }}>Mis reservas</Link>.
+            </p>
+          </div>
+          {!loading && slots.length > 0 && (
+            <div className="rounded-2xl p-5 self-end"
+                 style={{ background: 'rgba(244,239,230,0.08)', border: '1px solid rgba(244,239,230,0.15)' }}>
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold mb-1"
+                 style={{ color: 'rgba(242,237,222,0.6)', fontFamily: 'var(--font-mono), monospace' }}>
+                AHORA MISMO
+              </p>
+              <p className="font-mono tabular leading-none mt-1 font-bold tracking-[-0.04em]"
+                 style={{ fontSize: 56, color: 'var(--v5-yellow)' }}>
+                {slots.length}
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold mt-2"
+                 style={{ color: 'var(--v5-cream)', opacity: 0.8, fontFamily: 'var(--font-mono), monospace' }}>
+                Cupos abiertos
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="flex items-center gap-2 mb-6">
         {[

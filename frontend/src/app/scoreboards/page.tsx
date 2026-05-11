@@ -69,23 +69,42 @@ export default function ScoreboardsListPage() {
   const done = list.filter((s) => s.status === 'COMPLETED' || s.status === 'ABANDONED');
 
   return (
-    <div className="bg-base">
-      <div className="border-b border-border-dark bg-base sticky top-14 z-30 lg:top-0 lg:relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <p className="eyebrow text-text-muted">Tu juego</p>
-            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight-2 mt-1">
-              Anotadores
-            </h1>
-          </div>
-          <button onClick={() => setCreateOpen(true)} className="btn-primary text-sm h-9">
-            <Plus className="w-3.5 h-3.5" />
-            Nuevo anotador
-          </button>
-        </div>
-      </div>
-
+    <div>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* V5 Hero */}
+        <section className="v5-hero-card relative">
+          <div className="grid lg:grid-cols-[1.5fr_auto] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10 items-end">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+                    style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}>
+                <span className="block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--v5-orange)' }} />
+                ANOTADORES
+              </span>
+              <h1 className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
+                  style={{
+                    fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                    fontSize: 'clamp(40px, 6vw, 80px)',
+                    color: 'var(--v5-cream)',
+                  }}>
+                ANOTÁ<br />
+                <span style={{ color: 'var(--v5-yellow)' }}>EN VIVO</span>.
+              </h1>
+              <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
+                Punto por punto. Audit log de cada cambio. Doubles, golden point, super tiebreak —
+                listo para apoyar el celu al lado de la cancha.
+              </p>
+            </div>
+            <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 group self-end">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}>
+                <Plus className="w-5 h-5" strokeWidth={3} />
+              </span>
+              <span className="text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--v5-cream)' }}>
+                NUEVO<br />ANOTADOR
+              </span>
+            </button>
+          </div>
+        </section>
+
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => <div key={i} className="card animate-pulse h-24" />)}

@@ -48,16 +48,50 @@ export default function RankingPage() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <div className="mb-8">
-        <p className="eyebrow text-text-muted mb-2">Ranking ELO</p>
-        <h1 className="section-header mb-3">Ranking global</h1>
-        <p className="text-sm text-text-secondary max-w-xl leading-relaxed">
-          Calculado automáticamente desde los partidos cargados en <span className="text-text-primary">Mi historial</span>.
-          Empezás en <span className="font-mono text-text-primary">1000</span> y se ajusta con cada partido.
-          K-factor <span className="font-mono">32</span> hasta los 30 partidos, después <span className="font-mono">16</span>.
-        </p>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      {/* V5 Hero */}
+      <section className="v5-hero-card relative">
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10 items-end">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+                  style={{ background: '#5C3320', color: 'var(--v5-cream)', fontFamily: 'var(--font-mono), monospace' }}>
+              <span className="block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--v5-orange)' }} />
+              RANKING ELO · {sport === 'PADEL' ? 'PADEL' : 'TENIS'}
+            </span>
+            <h1 className="font-bold uppercase tracking-[-0.035em] leading-[0.88]"
+                style={{
+                  fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                  fontSize: 'clamp(40px, 6vw, 80px)',
+                  color: 'var(--v5-cream)',
+                }}>
+              RANKING<br />
+              <span style={{ color: 'var(--v5-yellow)' }}>GLOBAL</span>.
+            </h1>
+            <p className="mt-5 text-[14px] max-w-md leading-relaxed" style={{ color: 'rgba(242,237,222,0.72)' }}>
+              Calculado automáticamente desde tus partidos. Empezás en 1000 y se ajusta con cada game.
+              K-factor 32 hasta los 30 partidos, después 16.
+            </p>
+          </div>
+          {user && myRow && data && (
+            <div className="rounded-2xl p-5"
+                 style={{ background: 'rgba(244,239,230,0.08)', border: '1px solid rgba(244,239,230,0.15)' }}>
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold mb-1"
+                 style={{ color: 'rgba(242,237,222,0.6)', fontFamily: 'var(--font-mono), monospace' }}>
+                TU POSICIÓN
+              </p>
+              <p className="font-bold tabular leading-none tracking-[-0.04em] mt-1"
+                 style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 56, color: 'var(--v5-yellow)' }}>
+                #{data.findIndex((e) => e.userId === user.id) + 1}
+              </p>
+              <div className="grid grid-cols-3 gap-3 mt-5 pt-4" style={{ borderTop: '1px solid rgba(244,239,230,0.15)' }}>
+                <Stat label="ELO" value={String(myRow.rating)} accent />
+                <Stat label="Pico" value={String(myRow.peakRating)} />
+                <Stat label="P-G-E" value={`${myRow.wins}-${myRow.losses}-${myRow.draws}`} />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="flex items-center gap-2 mb-6">
         {(['PADEL', 'TENNIS'] as Sport[]).map((s) => {
@@ -80,28 +114,6 @@ export default function RankingPage() {
         })}
       </div>
 
-      {user && myRow && data && (
-        <div className="card-elevated mb-6 bg-brand/5 border-brand/30">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <span className="score-digit text-4xl text-brand">
-                #{data.findIndex((e) => e.userId === user.id) + 1}
-              </span>
-              <div>
-                <p className="font-display font-semibold text-lg tracking-tight-2">Tu posición</p>
-                <p className="font-mono text-2xs uppercase tracking-widest text-text-muted">
-                  {myRow.user.firstName} {myRow.user.lastName}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-5">
-              <Stat label="ELO" value={String(myRow.rating)} accent />
-              <Stat label="Pico" value={String(myRow.peakRating)} />
-              <Stat label="P-G-E" value={`${myRow.wins}-${myRow.losses}-${myRow.draws}`} />
-            </div>
-          </div>
-        </div>
-      )}
 
       <section className="card-elevated p-0 overflow-hidden">
         {loading ? (
@@ -191,9 +203,12 @@ export default function RankingPage() {
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="text-center">
-      <p className="font-mono text-2xs uppercase tracking-widest text-text-muted">{label}</p>
-      <p className={`score-digit text-2xl ${accent ? 'text-brand' : 'text-text-primary'}`}>{value}</p>
+    <div>
+      <p className="font-mono text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: 'rgba(242,237,222,0.6)' }}>{label}</p>
+      <p className="font-mono tabular leading-none mt-1 font-bold tracking-[-0.03em]"
+         style={{ fontSize: 22, color: accent ? 'var(--v5-yellow)' : 'var(--v5-cream)' }}>
+        {value}
+      </p>
     </div>
   );
 }

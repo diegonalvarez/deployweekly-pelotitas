@@ -730,6 +730,224 @@ html.v5 body {
 }
 .v5-input::placeholder { color: rgba(26,18,8,0.4); }
 
+/* ─── Legacy class overrides — convert dark theme classes to v5
+   when they live inside the v5 AppShell main area. Lets us redesign
+   ~30 internal pages by changing the shell, without touching every
+   file individually. /scoreboard/[id] and naked landing pages keep
+   their own styling because they live outside .v5-shell-main.    */
+
+.v5-shell-main {
+  background: var(--v5-paper);
+  color: var(--v5-ink);
+}
+
+.v5-shell-main .bg-base,
+.v5-shell-main .bg-base-dark,
+.v5-shell-main .bg-gradient-mesh,
+.v5-shell-main .bg-gradient-dark,
+.v5-shell-main .bg-court-grid {
+  background-color: transparent;
+  background-image: none;
+}
+
+.v5-shell-main .bg-surface { background-color: #FFFFFF; }
+.v5-shell-main .bg-surface-light,
+.v5-shell-main .bg-surface-card,
+.v5-shell-main .bg-surface-raised,
+.v5-shell-main .bg-surface-hover { background-color: rgba(255,255,255,0.6); }
+
+.v5-shell-main .text-text-primary { color: var(--v5-ink); }
+.v5-shell-main .text-text-secondary { color: var(--v5-ink-2); }
+.v5-shell-main .text-text-muted { color: var(--v5-ink-2); opacity: 0.65; }
+.v5-shell-main .text-text-faint { color: var(--v5-ink-2); opacity: 0.4; }
+.v5-shell-main .text-white { color: var(--v5-ink); }
+
+.v5-shell-main .border-border-dark,
+.v5-shell-main .border-border-default,
+.v5-shell-main .border-border-light { border-color: var(--v5-paper-2); }
+
+.v5-shell-main .card,
+.v5-shell-main .card-elevated,
+.v5-shell-main .card-glow,
+.v5-shell-main .card-interactive {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 22px;
+  color: var(--v5-ink);
+  box-shadow: 0 1px 0 0 rgba(26,18,8,0.02);
+}
+.v5-shell-main .card:hover,
+.v5-shell-main .card-elevated:hover,
+.v5-shell-main .card-glow:hover,
+.v5-shell-main .card-interactive:hover {
+  border-color: rgba(255,122,61,0.25);
+  box-shadow: 0 18px 40px -18px rgba(26,18,8,0.18);
+  transform: none;
+}
+
+.v5-shell-main .glass,
+.v5-shell-main .glass-dark {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 22px;
+  color: var(--v5-ink);
+  box-shadow: 0 20px 50px -20px rgba(26,18,8,0.18);
+}
+
+.v5-shell-main .btn-primary {
+  background-color: var(--v5-ink);
+  color: var(--v5-cream);
+  border-radius: 999px;
+  box-shadow: none;
+  min-height: 40px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.v5-shell-main .btn-primary:hover { background-color: var(--v5-brown); box-shadow: none; }
+
+.v5-shell-main .btn-secondary {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  color: var(--v5-ink);
+  border-radius: 999px;
+  min-height: 40px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.v5-shell-main .btn-secondary:hover { background-color: rgba(255,255,255,1); border-color: var(--v5-orange); }
+
+.v5-shell-main .btn-outline,
+.v5-shell-main .btn-ghost {
+  color: var(--v5-ink-2);
+  border-radius: 999px;
+  background-color: transparent;
+  min-height: 40px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.v5-shell-main .btn-outline { border: 1px solid var(--v5-paper-2); }
+.v5-shell-main .btn-ghost:hover { background-color: rgba(26,18,8,0.04); color: var(--v5-ink); }
+
+.v5-shell-main .btn-danger {
+  background-color: var(--v5-red);
+  color: #FFFFFF;
+  border-radius: 999px;
+  min-height: 40px;
+}
+
+.v5-shell-main .btn-icon,
+.v5-shell-main .btn-icon-sm {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  color: var(--v5-ink);
+  border-radius: 999px;
+}
+.v5-shell-main .btn-icon:hover,
+.v5-shell-main .btn-icon-sm:hover { background-color: var(--v5-paper-2); border-color: var(--v5-orange); }
+
+.v5-shell-main .badge,
+.v5-shell-main .badge-neutral { background-color: var(--v5-paper-2); color: var(--v5-ink-2); box-shadow: none; border-radius: 999px; padding: 0.25rem 0.7rem; }
+.v5-shell-main .badge-brand,
+.v5-shell-main .badge-green { background-color: var(--v5-yellow); color: var(--v5-ink); box-shadow: none; }
+.v5-shell-main .badge-padel,
+.v5-shell-main .badge-blue { background-color: var(--v5-blue); color: #FFFFFF; box-shadow: none; }
+.v5-shell-main .badge-tennis,
+.v5-shell-main .badge-clay { background-color: var(--v5-red); color: #FFFFFF; box-shadow: none; }
+.v5-shell-main .badge-yellow { background-color: var(--v5-yellow); color: var(--v5-ink); box-shadow: none; }
+.v5-shell-main .badge-red { background-color: var(--v5-red); color: #FFFFFF; box-shadow: none; }
+
+.v5-shell-main .text-brand { color: var(--v5-orange); }
+.v5-shell-main .bg-brand { background-color: var(--v5-orange); color: var(--v5-ink); }
+.v5-shell-main .text-brand-ink { color: var(--v5-ink); }
+.v5-shell-main .text-clay,
+.v5-shell-main .text-tennis { color: var(--v5-red); }
+.v5-shell-main .text-sky,
+.v5-shell-main .text-padel { color: var(--v5-blue); }
+.v5-shell-main .text-warning { color: #C68B0F; }
+.v5-shell-main .text-negative { color: var(--v5-red); }
+.v5-shell-main .text-success { color: var(--v5-lime-ink); }
+
+.v5-shell-main .input,
+.v5-shell-main .input-search,
+.v5-shell-main .input-dark,
+.v5-shell-main .textarea {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  color: var(--v5-ink);
+  border-radius: 14px;
+}
+.v5-shell-main .input:focus,
+.v5-shell-main .input-search:focus,
+.v5-shell-main .input-dark:focus,
+.v5-shell-main .textarea:focus {
+  border-color: var(--v5-orange);
+  box-shadow: 0 0 0 3px rgba(255,122,61,0.12);
+}
+.v5-shell-main .input::placeholder,
+.v5-shell-main .textarea::placeholder,
+.v5-shell-main .input-search::placeholder { color: rgba(26,18,8,0.4); }
+
+.v5-shell-main .label {
+  color: var(--v5-ink-2);
+  letter-spacing: 0.14em;
+}
+
+.v5-shell-main .eyebrow {
+  color: var(--v5-ink-2);
+  opacity: 0.75;
+}
+
+.v5-shell-main .section-header {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  color: var(--v5-ink);
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+}
+
+.v5-shell-main .stat-card,
+.v5-shell-main .kpi-tile {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 22px;
+  box-shadow: 0 1px 0 0 rgba(26,18,8,0.02);
+}
+.v5-shell-main .stat-value,
+.v5-shell-main .kpi-value { color: var(--v5-ink); }
+.v5-shell-main .stat-label,
+.v5-shell-main .kpi-label { color: var(--v5-ink-2); opacity: 0.7; }
+
+.v5-shell-main .dropdown {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px -20px rgba(26,18,8,0.25);
+}
+.v5-shell-main .dropdown-item { color: var(--v5-ink); }
+.v5-shell-main .dropdown-item:hover { background-color: rgba(26,18,8,0.04); color: var(--v5-ink); }
+
+.v5-shell-main .court-line {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,122,61,0.4) 50%, transparent 100%);
+}
+
+.v5-shell-main .chip {
+  background-color: #FFFFFF;
+  border: 1px solid var(--v5-paper-2);
+  color: var(--v5-ink-2);
+}
+.v5-shell-main .chip.is-active {
+  background-color: var(--v5-orange);
+  border-color: var(--v5-orange);
+  color: var(--v5-ink);
+}
+
 /* Mobile bottom nav (Capacitor-aware) */
 .v5-mobile-nav {
   position: fixed;

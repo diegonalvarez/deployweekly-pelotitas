@@ -536,7 +536,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar onMobileMenu={() => setDrawerOpen(true)} />
-        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        <main className="v5-shell-main flex-1 pb-20 lg:pb-0">{children}</main>
       </div>
     </div>
   );
