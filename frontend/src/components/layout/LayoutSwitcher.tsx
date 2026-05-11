@@ -24,7 +24,8 @@ const MARKETING_PREFIXES = [
 const NAKED_PREFIXES = [
   '/m/',      // shareable match card
   '/h2h/',    // public head-to-head
-  '/v2',      // landing B (marketing variant)
+  '/v2',      // landing B (marketing variant — dark editorial)
+  '/v3',      // landing C (marketing variant — brutalist light)
 ];
 
 function isMarketing(pathname: string): boolean {
