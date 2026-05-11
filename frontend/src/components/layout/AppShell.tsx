@@ -147,7 +147,7 @@ function VisitorCTA({ onNavigate }: { onNavigate?: () => void }) {
         href="/register"
         onClick={onNavigate}
         className="mt-3 inline-flex items-center gap-2 pl-3 pr-1 py-1 rounded-full w-full"
-        style={{ background: 'var(--v5-cream)', color: 'var(--v5-ink)' }}
+        style={{ background: 'var(--v5-yellow)', color: 'var(--v5-ink)' }}
       >
         <span className="text-[11px] font-bold uppercase tracking-[0.12em] flex-1 text-left">CREAR CUENTA</span>
         <span className="inline-flex items-center justify-center w-7 h-7 rounded-full" style={{ background: 'var(--v5-orange)' }}>
@@ -204,7 +204,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside className="w-60 shrink-0 flex flex-col h-screen sticky top-0"
-           style={{ background: 'var(--v5-paper)', borderRight: '1px solid var(--v5-paper-2)' }}>
+           style={{ background: 'var(--v5-sidebar-bg)', borderRight: '1px solid var(--v5-paper-2)' }}>
       {/* Logo block */}
       <div className="h-16 flex items-center px-5" style={{ borderBottom: '1px solid var(--v5-paper-2)' }}>
         <Logo />
@@ -314,7 +314,7 @@ function Topbar({ onMobileMenu }: { onMobileMenu: () => void }) {
 
   return (
     <header className="sticky top-0 z-40 flex items-center gap-3 h-16 px-4 sm:px-6 backdrop-blur-md"
-            style={{ background: 'rgba(244,239,230,0.85)', borderBottom: '1px solid var(--v5-paper-2)' }}>
+            style={{ background: 'var(--v5-topbar-bg)', borderBottom: '1px solid var(--v5-paper-2)' }}>
       {/* Mobile menu */}
       <button
         onClick={onMobileMenu}
@@ -339,14 +339,14 @@ function Topbar({ onMobileMenu }: { onMobileMenu: () => void }) {
             placeholder="Buscar clubes, jugadores, torneos…"
             className="w-full h-10 pl-10 pr-14 text-[13px] rounded-full transition-all"
             style={{
-              background: '#FFFFFF',
+              background: 'var(--v5-card-bg)',
               border: '1px solid var(--v5-paper-2)',
               color: 'var(--v5-ink)',
               fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
             }}
           />
           <kbd className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-1 px-1.5 h-5 text-[10px] rounded"
-               style={{ color: 'var(--v5-ink-2)', background: 'var(--v5-paper-2)', fontFamily: 'var(--font-mono), monospace' }}>
+               style={{ color: 'var(--v5-ink-2)', background: 'var(--v5-paper)', border: '1px solid var(--v5-paper-2)', fontFamily: 'var(--font-mono), monospace' }}>
             ⌘ K
           </kbd>
         </div>
@@ -408,7 +408,7 @@ function Topbar({ onMobileMenu }: { onMobileMenu: () => void }) {
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 h-10 pl-1 pr-3 rounded-full transition-all"
-                style={{ background: '#FFFFFF', border: '1px solid var(--v5-paper-2)' }}
+                style={{ background: 'var(--v5-card-bg)', border: '1px solid var(--v5-paper-2)' }}
               >
                 <div className="w-8 h-8 rounded-full font-bold text-[11px] flex items-center justify-center"
                      style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}>

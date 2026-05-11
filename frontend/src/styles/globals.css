@@ -32,6 +32,8 @@
   /* "Card" surface — separate var so we can flip dark independently */
   --v5-card-bg:      #FFFFFF;
   --v5-card-bg-2:    rgba(255,255,255,0.6);
+  --v5-topbar-bg:    rgba(244,239,230,0.85);
+  --v5-sidebar-bg:   #F4EFE6;
 }
 
 /* ─── V5 DARK mode — same accents, inverted surfaces ─── */
@@ -54,6 +56,8 @@ html.v5-dark {
 
   --v5-card-bg:      #1B1510;
   --v5-card-bg-2:    rgba(34,25,18,0.6);
+  --v5-topbar-bg:    rgba(20,16,11,0.85);
+  --v5-sidebar-bg:   #14100B;
 
   color-scheme: dark;
 }

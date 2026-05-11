@@ -17,7 +17,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
     setDark(val);
     const root = document.documentElement;
     root.classList.toggle('v5-dark', val);
-    try { localStorage.setItem('v5-theme', val ? 'dark' : 'light'); } catch {}
+    try { sessionStorage.setItem('v5-theme', val ? 'dark' : 'light'); } catch {}
   };
 
   if (!mounted) {
