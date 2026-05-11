@@ -829,7 +829,7 @@ html.v5 body {
 }
 
 .v5-shell-main .btn-primary {
-  background-color: var(--v5-ink);
+  background-color: var(--v5-brown);
   color: var(--v5-cream);
   border-radius: 999px;
   box-shadow: none;
@@ -839,7 +839,7 @@ html.v5 body {
   text-transform: uppercase;
   font-size: 12px;
 }
-.v5-shell-main .btn-primary:hover { background-color: var(--v5-brown); box-shadow: none; }
+.v5-shell-main .btn-primary:hover { background-color: var(--v5-orange); color: var(--v5-ink); box-shadow: none; }
 
 .v5-shell-main .btn-secondary {
   background-color: var(--v5-card-bg);
@@ -887,6 +887,10 @@ html.v5 body {
 
 .v5-shell-main .badge,
 .v5-shell-main .badge-neutral { background-color: var(--v5-paper-2); color: var(--v5-ink-2); box-shadow: none; border-radius: 999px; padding: 0.25rem 0.7rem; }
+
+/* Buttons styled inline with bg-brand or bg-text-primary on landing/role-activator */
+.v5-shell-main .bg-text-primary { background-color: var(--v5-brown); }
+.v5-shell-main .bg-text-primary.text-base { color: var(--v5-cream); }
 .v5-shell-main .badge-brand,
 .v5-shell-main .badge-green { background-color: var(--v5-yellow); color: var(--v5-ink); box-shadow: none; }
 .v5-shell-main .badge-padel,
@@ -898,7 +902,8 @@ html.v5 body {
 
 .v5-shell-main .text-brand { color: var(--v5-orange); }
 .v5-shell-main .bg-brand { background-color: var(--v5-orange); color: var(--v5-ink); }
-.v5-shell-main .text-brand-ink { color: var(--v5-ink); }
+.v5-shell-main .text-brand-ink { color: var(--v5-cream); }
+.v5-shell-main .bg-brand-ink { background-color: var(--v5-brown); }
 .v5-shell-main .text-clay,
 .v5-shell-main .text-tennis { color: var(--v5-red); }
 .v5-shell-main .text-sky,
