@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLocation, COUNTRIES, STATES_BY_COUNTRY } from '@/lib/location';
+import { PublicTopBar, FooterSignupCTA } from '@/components/public/PublicAuthAware';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
@@ -114,28 +115,7 @@ export default function PublicClubsDiscover() {
         >
           PELOTITAS<span style={{ color: 'var(--v5-orange)' }}>.</span>
         </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="text-[12px] font-bold uppercase tracking-[0.12em] hidden sm:inline-flex"
-            style={{ color: 'var(--v5-ink-2)', fontFamily: 'var(--font-mono), monospace' }}
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[12px] font-bold uppercase tracking-[0.1em]"
-            style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
-          >
-            Crear cuenta gratis
-            <span
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full"
-              style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
-            >
-              →
-            </span>
-          </Link>
-        </div>
+        <PublicTopBar />
       </header>
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
@@ -371,34 +351,7 @@ export default function PublicClubsDiscover() {
           className="mt-14 pt-8 text-center"
           style={{ borderTop: '1px solid var(--v5-paper-2)' }}
         >
-          <p
-            className="text-[12px] font-bold uppercase tracking-[0.18em]"
-            style={{ color: 'var(--v5-ink-2)', fontFamily: 'var(--font-mono), monospace' }}
-          >
-            ¿Tu club no está? Registralo gratis
-          </p>
-          <Link
-            href="/register"
-            className="mt-4 inline-flex items-center gap-2 pl-5 pr-1 py-1 rounded-full text-[13px] font-bold uppercase tracking-[0.1em]"
-            style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
-          >
-            Crear cuenta gratis
-            <span
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full"
-              style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
-            >
-              →
-            </span>
-          </Link>
-          <div className="mt-3">
-            <Link
-              href="/login"
-              className="text-[12px] font-bold uppercase tracking-[0.12em] underline-offset-4 hover:underline"
-              style={{ color: 'var(--v5-ink-2)', fontFamily: 'var(--font-mono), monospace' }}
-            >
-              Ya tengo cuenta · Iniciar sesión
-            </Link>
-          </div>
+          <FooterSignupCTA taglineLoggedOut="¿Tu club no está? Registralo gratis" />
           <div className="mt-6">
             <Link
               href="/"
