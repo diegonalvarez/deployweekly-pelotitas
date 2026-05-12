@@ -439,6 +439,39 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
           </Section>
         )}
 
+        {/* Contact */}
+        {(club.whatsappPhone || club.instagramUrl || club.phone || club.email || club.website) && (
+          <Section eyebrow="Contacto" title="Escribinos">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {club.whatsappPhone && (
+                <ContactRow
+                  href={whatsappHref(club.whatsappPhone)}
+                  label="WhatsApp"
+                  value={club.whatsappPhone}
+                  external
+                />
+              )}
+              {club.instagramUrl && (
+                <ContactRow
+                  href={club.instagramUrl}
+                  label="Instagram"
+                  value={club.instagramUrl.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}
+                  external
+                />
+              )}
+              {club.phone && (
+                <ContactRow href={`tel:${club.phone}`} label="Teléfono" value={club.phone} />
+              )}
+              {club.email && (
+                <ContactRow href={`mailto:${club.email}`} label="Email" value={club.email} />
+              )}
+              {club.website && (
+                <ContactRow href={club.website} label="Web" value={club.website} external />
+              )}
+            </div>
+          </Section>
+        )}
+
         {/* Hours */}
         {(club.hoursWeekday || club.hoursWeekend) && (
           <Section eyebrow="Horarios" title="Cuándo se juega">
@@ -755,39 +788,6 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               className="w-full"
               style={{ borderRadius: 28, background: 'var(--v5-ink)', maxHeight: 540 }}
             />
-          </Section>
-        )}
-
-        {/* Contact */}
-        {(club.whatsappPhone || club.instagramUrl || club.phone || club.email || club.website) && (
-          <Section eyebrow="Contacto" title="Escribinos">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {club.whatsappPhone && (
-                <ContactRow
-                  href={whatsappHref(club.whatsappPhone)}
-                  label="WhatsApp"
-                  value={club.whatsappPhone}
-                  external
-                />
-              )}
-              {club.instagramUrl && (
-                <ContactRow
-                  href={club.instagramUrl}
-                  label="Instagram"
-                  value={club.instagramUrl.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}
-                  external
-                />
-              )}
-              {club.phone && (
-                <ContactRow href={`tel:${club.phone}`} label="Teléfono" value={club.phone} />
-              )}
-              {club.email && (
-                <ContactRow href={`mailto:${club.email}`} label="Email" value={club.email} />
-              )}
-              {club.website && (
-                <ContactRow href={club.website} label="Web" value={club.website} external />
-              )}
-            </div>
           </Section>
         )}
 
