@@ -172,7 +172,50 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
         </Link>
       </header>
 
-      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      {/* Full-bleed cover image */}
+      {club.imageUrl && (
+        <section className="relative w-full" style={{ height: 'clamp(280px, 42vw, 520px)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={club.imageUrl}
+            alt={`${club.name} portada`}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(20,16,11,0) 30%, rgba(20,16,11,0.55) 70%, rgba(20,16,11,0.92) 100%)',
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 px-5 sm:px-8 pb-6 sm:pb-10 max-w-5xl mx-auto">
+            <p
+              className="text-[11px] font-bold uppercase tracking-[0.22em]"
+              style={{ color: 'rgba(242,237,222,0.85)', fontFamily: 'var(--font-mono), monospace' }}
+            >
+              {[cityBadge, club.sports.map((s) => (s === 'PADEL' ? 'Padel' : 'Tenis')).join(' · ')]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            <h1
+              className="font-bold uppercase tracking-[-0.035em] leading-[0.9] mt-2"
+              style={{
+                fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                fontSize: 'clamp(40px, 7vw, 88px)',
+                color: 'var(--v5-cream)',
+                textShadow: '0 2px 24px rgba(0,0,0,0.45)',
+              }}
+            >
+              {club.name}
+            </h1>
+          </div>
+        </section>
+      )}
+
+      <div
+        className="max-w-5xl mx-auto px-5 sm:px-8 py-8 sm:py-12"
+        style={{ marginTop: club.imageUrl ? -64 : 0, position: 'relative' }}
+      >
         {/* Hero brown card */}
         <section className="v5-hero-card relative p-6 sm:p-10 mb-10 overflow-hidden">
           <div className="flex items-start gap-5 sm:gap-7 flex-wrap">
@@ -204,17 +247,19 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               >
                 Complejo · perfil público
               </p>
-              <h1
-                className="font-bold uppercase tracking-[-0.03em] leading-[0.92] mt-1"
-                style={{
-                  fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
-                  fontSize: 'clamp(34px, 5vw, 56px)',
-                  color: 'var(--v5-cream)',
-                }}
-              >
-                {club.name}
-              </h1>
-              {cityBadge && (
+              {!club.imageUrl && (
+                <h1
+                  className="font-bold uppercase tracking-[-0.03em] leading-[0.92] mt-1"
+                  style={{
+                    fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                    fontSize: 'clamp(34px, 5vw, 56px)',
+                    color: 'var(--v5-cream)',
+                  }}
+                >
+                  {club.name}
+                </h1>
+              )}
+              {cityBadge && !club.imageUrl && (
                 <p
                   className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.18em]"
                   style={{
@@ -227,7 +272,7 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                 </p>
               )}
               {club.description && (
-                <p className="text-[15px] mt-4 max-w-2xl leading-relaxed" style={{ color: 'rgba(242,237,222,0.78)' }}>
+                <p className={`text-[15px] ${club.imageUrl ? 'mt-2' : 'mt-4'} max-w-2xl leading-relaxed`} style={{ color: 'rgba(242,237,222,0.78)' }}>
                   {club.description}
                 </p>
               )}
@@ -254,11 +299,11 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               {/* CTAs */}
               <div className="mt-7 flex items-center gap-3 flex-wrap">
                 <Link
-                  href={`/clubs/${club.id}`}
+                  href={`/register?next=/clubs/${club.id}`}
                   className="inline-flex items-center gap-2 pl-5 pr-1 py-1 rounded-full text-[13px] font-bold uppercase tracking-[0.1em]"
                   style={{ background: 'var(--v5-cream)', color: 'var(--v5-brown)' }}
                 >
-                  Reservar cancha
+                  Crear cuenta para reservar
                   <span
                     className="inline-flex items-center justify-center w-9 h-9 rounded-full"
                     style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
@@ -288,20 +333,55 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               </div>
             </div>
           </div>
+
+          {/* Stats strip */}
+          <div
+            className="mt-8 pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3"
+            style={{ borderTop: '1px solid #5C3320' }}
+          >
+            {[
+              { l: 'Canchas', v: club.courts.length },
+              { l: 'Torneos activos', v: upcomingTournaments.length + inProgressTournaments.length },
+              { l: 'Deportes', v: club.sports.length },
+              { l: 'Sedes', v: club.locations.length },
+            ].map((s) => (
+              <div key={s.l}>
+                <p
+                  className="text-[10px] font-bold uppercase tracking-[0.22em]"
+                  style={{ color: 'rgba(242,237,222,0.55)', fontFamily: 'var(--font-mono), monospace' }}
+                >
+                  {s.l}
+                </p>
+                <p
+                  className="font-bold tabular leading-none mt-1 tracking-[-0.04em]"
+                  style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 32, color: 'var(--v5-cream)' }}
+                >
+                  {s.v}
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Gallery */}
-        {(club.imageUrl || club.galleryUrls.length > 0) && (
+        {/* Gallery — featured + grid */}
+        {club.galleryUrls.length > 0 && (
           <Section eyebrow="Galería" title="El complejo en imágenes">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {[club.imageUrl, ...club.galleryUrls].filter(Boolean).map((url, i) => (
+            <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={club.galleryUrls[0]}
+                alt={`${club.name} foto destacada`}
+                className="w-full h-full object-cover"
+                style={{ borderRadius: 28, background: 'var(--v5-paper-2)', gridRow: 'span 2', minHeight: 320, aspectRatio: '4 / 5' }}
+              />
+              {club.galleryUrls.slice(1, 5).map((url, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={`${url}-${i}`}
-                  src={url as string}
-                  alt={`${club.name} foto ${i + 1}`}
+                  src={url}
+                  alt={`${club.name} foto ${i + 2}`}
                   className="w-full aspect-[4/3] object-cover"
-                  style={{ borderRadius: 24, background: 'var(--v5-paper-2)' }}
+                  style={{ borderRadius: 22, background: 'var(--v5-paper-2)' }}
                 />
               ))}
             </div>
@@ -314,6 +394,8 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
             <video
               controls
               src={club.videoUrl}
+              poster={club.imageUrl ?? club.galleryUrls[0]}
+              preload="metadata"
               className="w-full"
               style={{ borderRadius: 28, background: 'var(--v5-ink)', maxHeight: 540 }}
             />
