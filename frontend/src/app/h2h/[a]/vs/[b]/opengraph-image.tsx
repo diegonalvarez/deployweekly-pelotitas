@@ -5,7 +5,7 @@ export const alt = 'Pelotitas — head to head';
 export const contentType = 'image/png';
 export const size = { width: 1200, height: 630 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
+const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
 type H2H = {
   userA: { id: string; firstName: string; lastName: string; avatarUrl: string | null };

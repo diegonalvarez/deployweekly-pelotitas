@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import TimelineClient from './TimelineClient';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
+const API = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
 async function getProfile(id: string) {
   try {

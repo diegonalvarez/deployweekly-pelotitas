@@ -54,6 +54,7 @@ services:
     container_name: pelotitas-web
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-3099}
+      INTERNAL_API_URL: http://backend:${BACKEND_PORT:-3099}
     ports:
       - '${FRONTEND_PORT:-3098}:3098'
     depends_on:
