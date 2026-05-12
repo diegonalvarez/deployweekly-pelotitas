@@ -167,19 +167,28 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
         >
           PELOTITAS<span style={{ color: 'var(--v5-orange)' }}>.</span>
         </Link>
-        <Link
-          href="/register"
-          className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[12px] font-bold uppercase tracking-[0.1em]"
-          style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
-        >
-          Crear cuenta gratis
-          <span
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full"
-            style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-[12px] font-bold uppercase tracking-[0.12em] hidden sm:inline-flex"
+            style={{ color: 'var(--v5-ink-2)', fontFamily: 'var(--font-mono), monospace' }}
           >
-            →
-          </span>
-        </Link>
+            Iniciar sesión
+          </Link>
+          <Link
+            href="/register"
+            className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[12px] font-bold uppercase tracking-[0.1em]"
+            style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
+          >
+            Crear cuenta gratis
+            <span
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full"
+              style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
+            >
+              →
+            </span>
+          </Link>
+        </div>
       </header>
 
       {/* Full-bleed cover image */}
@@ -323,6 +332,13 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                   >
                     →
                   </span>
+                </Link>
+                <Link
+                  href={`/login?next=/clubs/${club.id}`}
+                  className="text-[12px] font-bold uppercase tracking-[0.12em] underline-offset-4 hover:underline"
+                  style={{ color: 'rgba(242,237,222,0.75)', fontFamily: 'var(--font-mono), monospace' }}
+                >
+                  Ya tengo cuenta · Iniciar sesión
                 </Link>
                 {upcomingTournaments.length > 0 && (
                   <Link
@@ -844,6 +860,15 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               →
             </span>
           </Link>
+          <div className="mt-3">
+            <Link
+              href="/login"
+              className="text-[12px] font-bold uppercase tracking-[0.12em] underline-offset-4 hover:underline"
+              style={{ color: 'var(--v5-ink-2)', fontFamily: 'var(--font-mono), monospace' }}
+            >
+              Ya tengo cuenta · Iniciar sesión
+            </Link>
+          </div>
           <div className="mt-6">
             <Link
               href="/"
