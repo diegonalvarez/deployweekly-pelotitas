@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import OpenStatusBadge from './OpenStatusBadge';
 
 const API = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
@@ -188,6 +189,9 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                 'linear-gradient(180deg, rgba(20,16,11,0) 30%, rgba(20,16,11,0.55) 70%, rgba(20,16,11,0.92) 100%)',
             }}
           />
+          <div className="absolute inset-x-0 top-0 px-5 sm:px-8 pt-6 sm:pt-8 max-w-5xl mx-auto flex justify-end">
+            <OpenStatusBadge hoursWeekday={club.hoursWeekday} hoursWeekend={club.hoursWeekend} />
+          </div>
           <div className="absolute inset-x-0 bottom-0 px-5 sm:px-8 pb-6 sm:pb-10 max-w-5xl mx-auto">
             <p
               className="text-[11px] font-bold uppercase tracking-[0.22em]"
@@ -685,6 +689,19 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
         {/* Location */}
         {club.locations.length > 0 && (
           <Section eyebrow="Ubicación" title="Cómo llegar">
+            {/* Embedded map for the main location */}
+            {mainLocation?.latitude != null && mainLocation?.longitude != null && (
+              <div className="mb-4 overflow-hidden" style={{ borderRadius: 28 }}>
+                <iframe
+                  title={`Mapa de ${mainLocation.name ?? club.name}`}
+                  src={`https://maps.google.com/maps?q=${mainLocation.latitude},${mainLocation.longitude}&z=15&output=embed`}
+                  className="w-full"
+                  style={{ height: 320, border: 0, display: 'block' }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-3">
               {club.locations.map((loc) => (
                 <div
@@ -808,6 +825,43 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Sticky mobile CTA — leaves desktop alone */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 md:hidden px-3 pt-3 flex items-center gap-2"
+        style={{
+          background: 'rgba(244,239,230,0.94)',
+          backdropFilter: 'blur(12px)',
+          borderTop: '1px solid var(--v5-paper-2)',
+          paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+        }}
+      >
+        {club.whatsappPhone && (
+          <a
+            href={whatsappHref(club.whatsappPhone)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center h-12 w-12 rounded-full flex-none"
+            style={{ background: '#25D366', color: '#FFFFFF', fontSize: 22 }}
+            aria-label="WhatsApp"
+          >
+            ✉
+          </a>
+        )}
+        <Link
+          href={`/register?next=/clubs/${club.id}`}
+          className="flex-1 inline-flex items-center justify-between pl-5 pr-1 py-1 rounded-full text-[13px] font-bold uppercase tracking-[0.1em]"
+          style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
+        >
+          Reservar cancha
+          <span
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full"
+            style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
+          >
+            →
+          </span>
+        </Link>
       </div>
     </div>
   );
