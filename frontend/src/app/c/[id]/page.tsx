@@ -367,17 +367,75 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
           </div>
         </section>
 
-        {/* Video */}
-        {club.videoUrl && (
-          <Section eyebrow="Video" title="Conocé el lugar">
-            <video
-              controls
-              src={club.videoUrl}
-              poster={club.imageUrl ?? club.galleryUrls[0]}
-              preload="metadata"
-              className="w-full"
-              style={{ borderRadius: 28, background: 'var(--v5-ink)', maxHeight: 540 }}
-            />
+        {/* Location */}
+        {club.locations.length > 0 && (
+          <Section eyebrow="Ubicación" title="Cómo llegar">
+            {/* Embedded map for the main location */}
+            {mainLocation?.latitude != null && mainLocation?.longitude != null && (
+              <div className="mb-4 overflow-hidden" style={{ borderRadius: 28 }}>
+                <iframe
+                  title={`Mapa de ${mainLocation.name ?? club.name}`}
+                  src={`https://maps.google.com/maps?q=${mainLocation.latitude},${mainLocation.longitude}&z=15&output=embed`}
+                  className="w-full"
+                  style={{ height: 320, border: 0, display: 'block' }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-3">
+              {club.locations.map((loc) => (
+                <div
+                  key={loc.id}
+                  className="v5-card p-5 flex items-start gap-4 flex-wrap"
+                  style={{ borderRadius: 24, background: 'var(--v5-card-bg)' }}
+                >
+                  <div className="min-w-0 flex-1">
+                    {loc.name && (
+                      <p
+                        className="text-[11px] font-bold uppercase tracking-[0.2em]"
+                        style={{
+                          color: 'var(--v5-ink-2)',
+                          fontFamily: 'var(--font-mono), monospace',
+                        }}
+                      >
+                        {loc.name}{loc.isMain && ' · Sede principal'}
+                      </p>
+                    )}
+                    <p
+                      className="font-bold mt-1"
+                      style={{
+                        fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
+                        fontSize: 20,
+                        letterSpacing: '-0.02em',
+                      }}
+                    >
+                      {loc.address}
+                    </p>
+                    <p className="text-[13px] mt-1" style={{ color: 'var(--v5-ink-2)' }}>
+                      {[loc.city, loc.state, loc.country].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                  {loc.latitude != null && loc.longitude != null && (
+                    <a
+                      href={mapsHref(loc.latitude, loc.longitude)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
+                      style={{ background: 'var(--v5-ink)', color: 'var(--v5-cream)' }}
+                    >
+                      Abrir en Maps
+                      <span
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-full"
+                        style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
+                      >
+                        →
+                      </span>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
           </Section>
         )}
 
@@ -686,75 +744,17 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
           </Section>
         )}
 
-        {/* Location */}
-        {club.locations.length > 0 && (
-          <Section eyebrow="Ubicación" title="Cómo llegar">
-            {/* Embedded map for the main location */}
-            {mainLocation?.latitude != null && mainLocation?.longitude != null && (
-              <div className="mb-4 overflow-hidden" style={{ borderRadius: 28 }}>
-                <iframe
-                  title={`Mapa de ${mainLocation.name ?? club.name}`}
-                  src={`https://maps.google.com/maps?q=${mainLocation.latitude},${mainLocation.longitude}&z=15&output=embed`}
-                  className="w-full"
-                  style={{ height: 320, border: 0, display: 'block' }}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            )}
-            <div className="grid grid-cols-1 gap-3">
-              {club.locations.map((loc) => (
-                <div
-                  key={loc.id}
-                  className="v5-card p-5 flex items-start gap-4 flex-wrap"
-                  style={{ borderRadius: 24, background: 'var(--v5-card-bg)' }}
-                >
-                  <div className="min-w-0 flex-1">
-                    {loc.name && (
-                      <p
-                        className="text-[11px] font-bold uppercase tracking-[0.2em]"
-                        style={{
-                          color: 'var(--v5-ink-2)',
-                          fontFamily: 'var(--font-mono), monospace',
-                        }}
-                      >
-                        {loc.name}{loc.isMain && ' · Sede principal'}
-                      </p>
-                    )}
-                    <p
-                      className="font-bold mt-1"
-                      style={{
-                        fontFamily: 'var(--font-display), Space Grotesk, sans-serif',
-                        fontSize: 20,
-                        letterSpacing: '-0.02em',
-                      }}
-                    >
-                      {loc.address}
-                    </p>
-                    <p className="text-[13px] mt-1" style={{ color: 'var(--v5-ink-2)' }}>
-                      {[loc.city, loc.state, loc.country].filter(Boolean).join(', ')}
-                    </p>
-                  </div>
-                  {loc.latitude != null && loc.longitude != null && (
-                    <a
-                      href={mapsHref(loc.latitude, loc.longitude)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
-                      style={{ background: 'var(--v5-ink)', color: 'var(--v5-cream)' }}
-                    >
-                      Abrir en Maps
-                      <span
-                        className="inline-flex items-center justify-center w-7 h-7 rounded-full"
-                        style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
-                      >
-                        →
-                      </span>
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
+        {/* Video */}
+        {club.videoUrl && (
+          <Section eyebrow="Video" title="Conocé el lugar">
+            <video
+              controls
+              src={club.videoUrl}
+              poster={club.imageUrl ?? club.galleryUrls[0]}
+              preload="metadata"
+              className="w-full"
+              style={{ borderRadius: 28, background: 'var(--v5-ink)', maxHeight: 540 }}
+            />
           </Section>
         )}
 
