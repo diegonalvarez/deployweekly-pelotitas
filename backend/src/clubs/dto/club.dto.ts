@@ -32,7 +32,49 @@ export class CreateClubDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  logoUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   imageUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  galleryUrls?: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  amenities?: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  hoursWeekday?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  hoursWeekend?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  instagramUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  whatsappPhone?: string;
 
   @ApiProperty({ enum: Sport, isArray: true })
   @IsArray()
@@ -109,7 +151,49 @@ export class UpdateClubDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  logoUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   imageUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  galleryUrls?: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  amenities?: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  hoursWeekday?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  hoursWeekend?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  instagramUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  whatsappPhone?: string;
 
   @ApiProperty({ enum: Sport, isArray: true, required: false })
   @IsOptional()
@@ -126,6 +210,11 @@ export class UpdateClubDto {
   @IsOptional()
   @IsEnum(ReservationAccessMode)
   reservationMode?: ReservationAccessMode;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 export class CreateLocationDto {

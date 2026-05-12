@@ -16,6 +16,22 @@ const RESERVATION_MODES = [
   { value: 'CONNECTED_ONLY', label: 'Solo conectados', description: 'Solo usuarios que envian solicitud y son aceptados' },
 ];
 
+const COMMON_AMENITIES = [
+  'Estacionamiento gratuito',
+  'Vestuarios + duchas',
+  'Bar / cantina',
+  'Pro shop',
+  'WiFi gratuita',
+  'Iluminación LED',
+  'Alquiler de palas',
+  'Profesores certificados',
+  'Cordaje de raquetas',
+  'Zona kids',
+  'Pileta',
+  'SUM / eventos',
+  'Acceso para discapacitados',
+];
+
 interface ClubData {
   id: string;
   name: string;
@@ -44,9 +60,22 @@ export default function ClubSettingsPage() {
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
   const [reservationMode, setReservationMode] = useState('OPEN');
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [sports, setSports] = useState<string[]>([]);
+  // Landing fields
+  const [logoUrl, setLogoUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryDraft, setGalleryDraft] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [amenities, setAmenities] = useState<string[]>([]);
+  const [amenityDraft, setAmenityDraft] = useState('');
+  const [hoursWeekday, setHoursWeekday] = useState('');
+  const [hoursWeekend, setHoursWeekend] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [whatsappPhone, setWhatsappPhone] = useState('');
   // Country of the club's main location — used so PhoneInput defaults
   // to the right dial code when the user hasn't yet entered a phone.
   const [clubCountry, setClubCountry] = useState<string>('Argentina');
@@ -67,9 +96,19 @@ export default function ClubSettingsPage() {
       setDescription(data.description || '');
       setPhone(data.phone || '');
       setEmail(data.email || '');
+      setWebsite(data.website || '');
       setReservationMode(data.reservationMode || 'OPEN');
       setPaymentMethods(data.paymentMethods || []);
       setSports(data.sports || []);
+      setLogoUrl(data.logoUrl || '');
+      setImageUrl(data.imageUrl || '');
+      setGalleryUrls(data.galleryUrls || []);
+      setVideoUrl(data.videoUrl || '');
+      setAmenities(data.amenities || []);
+      setHoursWeekday(data.hoursWeekday || '');
+      setHoursWeekend(data.hoursWeekend || '');
+      setInstagramUrl(data.instagramUrl || '');
+      setWhatsappPhone(data.whatsappPhone || '');
       const mainLoc = data.locations?.find((l: any) => l.isMain) || data.locations?.[0];
       if (mainLoc?.country) setClubCountry(mainLoc.country);
     } catch (err: any) {
@@ -109,6 +148,11 @@ export default function ClubSettingsPage() {
       return;
     }
 
+    if (whatsappPhone && !isValidE164(whatsappPhone)) {
+      toast.error('Revisá el número de WhatsApp');
+      return;
+    }
+
     setSaving(true);
     try {
       await api.patch(`/clubs/${clubId}`, {
@@ -116,9 +160,19 @@ export default function ClubSettingsPage() {
         description: description.trim() || undefined,
         phone: phone.trim() || undefined,
         email: email.trim() || undefined,
+        website: website.trim() || undefined,
         reservationMode,
         paymentMethods,
         sports,
+        logoUrl: logoUrl.trim() || undefined,
+        imageUrl: imageUrl.trim() || undefined,
+        galleryUrls: galleryUrls.filter((u) => u.trim()),
+        videoUrl: videoUrl.trim() || undefined,
+        amenities,
+        hoursWeekday: hoursWeekday.trim() || undefined,
+        hoursWeekend: hoursWeekend.trim() || undefined,
+        instagramUrl: instagramUrl.trim() || undefined,
+        whatsappPhone: whatsappPhone.trim() || undefined,
       });
       toast.success('Configuracion guardada');
       fetchClub();
@@ -127,6 +181,23 @@ export default function ClubSettingsPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const addGalleryUrl = () => {
+    const v = galleryDraft.trim();
+    if (!v) return;
+    setGalleryUrls((prev) => [...prev, v]);
+    setGalleryDraft('');
+  };
+  const removeGalleryAt = (i: number) =>
+    setGalleryUrls((prev) => prev.filter((_, idx) => idx !== i));
+  const toggleAmenity = (a: string) =>
+    setAmenities((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
+  const addCustomAmenity = () => {
+    const v = amenityDraft.trim();
+    if (!v || amenities.includes(v)) return;
+    setAmenities((prev) => [...prev, v]);
+    setAmenityDraft('');
   };
 
   const handleDeactivate = async () => {
@@ -241,6 +312,220 @@ export default function ClubSettingsPage() {
                   placeholder="contacto@club.com"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="label">Sitio web</label>
+              <input
+                className="input"
+                type="url"
+                value={website}
+                onChange={e => setWebsite(e.target.value)}
+                placeholder="https://miclub.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Imágenes y multimedia */}
+        <div className="card-elevated mb-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+            <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Imágenes y video
+          </h2>
+          <p className="text-text-muted text-xs mb-5">
+            Pegá URLs de imágenes (Unsplash, tu CDN, etc.) y un video opcional. Se ven en la landing pública del complejo.
+          </p>
+
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="label">Logo (URL)</label>
+                <input
+                  className="input"
+                  type="url"
+                  value={logoUrl}
+                  onChange={e => setLogoUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+                {logoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logoUrl} alt="Logo preview" className="mt-2 w-20 h-20 rounded-xl object-cover border border-border-dark" />
+                )}
+              </div>
+              <div>
+                <label className="label">Foto principal / portada (URL)</label>
+                <input
+                  className="input"
+                  type="url"
+                  value={imageUrl}
+                  onChange={e => setImageUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+                {imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="Hero preview" className="mt-2 w-full aspect-[16/9] rounded-xl object-cover border border-border-dark" />
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Galería (URLs)</label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  className="input flex-1"
+                  type="url"
+                  value={galleryDraft}
+                  onChange={e => setGalleryDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addGalleryUrl(); } }}
+                  placeholder="https://..."
+                />
+                <button type="button" onClick={addGalleryUrl} className="btn-secondary shrink-0">
+                  Agregar
+                </button>
+              </div>
+              {galleryUrls.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {galleryUrls.map((url, i) => (
+                    <div key={`${url}-${i}`} className="relative group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Galería ${i + 1}`} className="w-full aspect-square rounded-lg object-cover border border-border-dark" />
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryAt(i)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-negative/90 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Eliminar"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="label">Video (URL MP4)</label>
+              <input
+                className="input"
+                type="url"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value)}
+                placeholder="https://.../video.mp4"
+              />
+              {videoUrl && (
+                <video src={videoUrl} controls className="mt-2 w-full max-h-60 rounded-xl bg-black" />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Horarios */}
+        <div className="card-elevated mb-6 animate-fade-in-up" style={{ animationDelay: '175ms' }}>
+          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+            <svg className="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Horarios
+          </h2>
+          <p className="text-text-muted text-xs mb-5">Formato libre, por ejemplo <code>08:00 — 23:30</code></p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Lunes a viernes</label>
+              <input
+                className="input"
+                value={hoursWeekday}
+                onChange={e => setHoursWeekday(e.target.value)}
+                placeholder="08:00 — 23:30"
+              />
+            </div>
+            <div>
+              <label className="label">Sábados y domingos</label>
+              <input
+                className="input"
+                value={hoursWeekend}
+                onChange={e => setHoursWeekend(e.target.value)}
+                placeholder="08:00 — 22:00"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Amenities */}
+        <div className="card-elevated mb-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+            <svg className="w-5 h-5 text-padel" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Servicios y amenidades
+          </h2>
+          <p className="text-text-muted text-xs mb-5">Tocá para activar/desactivar. Sumá los tuyos abajo.</p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {Array.from(new Set([...COMMON_AMENITIES, ...amenities])).map((a) => {
+              const isSelected = amenities.includes(a);
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => toggleAmenity(a)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all border ${
+                    isSelected
+                      ? 'bg-brand/15 text-brand border-brand/30'
+                      : 'bg-surface-light text-text-secondary border-border-dark hover:border-border-default'
+                  }`}
+                >
+                  {isSelected && <span className="mr-1">✓</span>}
+                  {a}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex gap-2">
+            <input
+              className="input flex-1"
+              value={amenityDraft}
+              onChange={e => setAmenityDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomAmenity(); } }}
+              placeholder="Agregar otro servicio…"
+            />
+            <button type="button" onClick={addCustomAmenity} className="btn-secondary shrink-0">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        {/* Redes sociales */}
+        <div className="card-elevated mb-6 animate-fade-in-up" style={{ animationDelay: '225ms' }}>
+          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+            <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Redes y WhatsApp
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+            <div>
+              <label className="label">Instagram (URL)</label>
+              <input
+                className="input"
+                type="url"
+                value={instagramUrl}
+                onChange={e => setInstagramUrl(e.target.value)}
+                placeholder="https://instagram.com/tuclub"
+              />
+            </div>
+            <div>
+              <label className="label">WhatsApp</label>
+              <PhoneInput
+                value={whatsappPhone}
+                onChange={setWhatsappPhone}
+                defaultCountryName={clubCountry}
+                placeholder="11 1234 5678"
+              />
             </div>
           </div>
         </div>
