@@ -422,7 +422,7 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
-                          style={{ background: 'var(--v5-ink)', color: 'var(--v5-cream)' }}
+                          style={{ background: 'var(--v5-brown)', color: 'var(--v5-cream)' }}
                         >
                           Maps
                           <span
@@ -658,7 +658,7 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                     <span
                       className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.18em]"
                       style={{
-                        background: 'var(--v5-ink)',
+                        background: 'var(--v5-brown)',
                         color: 'var(--v5-cream)',
                         fontFamily: 'var(--font-mono), monospace',
                       }}

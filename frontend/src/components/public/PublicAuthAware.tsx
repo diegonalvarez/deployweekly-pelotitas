@@ -2,11 +2,18 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import ThemeToggle from '@/components/ThemeToggle';
 
 /** Top-bar right side: switches between login/signup CTAs and a user chip. */
 export function PublicTopBar() {
   const { user, loading } = useAuth();
-  if (loading) return <div style={{ width: 1, height: 32 }} />;
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3">
+        <ThemeToggle compact />
+      </div>
+    );
+  }
 
   if (user) {
     const isAdmin = user.roles?.includes('ADMIN');
@@ -29,6 +36,7 @@ export function PublicTopBar() {
             </span>
           )}
         </span>
+        <ThemeToggle compact />
         <Link
           href={dashboardHref}
           className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[12px] font-bold uppercase tracking-[0.1em]"
@@ -47,7 +55,8 @@ export function PublicTopBar() {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3 sm:gap-4">
+      <ThemeToggle compact />
       <Link
         href="/login"
         className="text-[12px] font-bold uppercase tracking-[0.12em] hidden sm:inline-flex"
