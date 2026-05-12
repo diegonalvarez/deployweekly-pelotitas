@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import OpenStatusBadge from './OpenStatusBadge';
 import CopyAddressButton from './CopyAddressButton';
+import { findCountryByName } from '@/lib/countries';
 
 const API = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
@@ -152,6 +153,7 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
   const { club, upcomingTournaments, inProgressTournaments } = data;
   const mainLocation = club.locations.find((l) => l.isMain) ?? club.locations[0] ?? null;
   const cityBadge = mainLocation?.city ?? null;
+  const heroCountry = findCountryByName(mainLocation?.country);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--v5-paper)', color: 'var(--v5-ink)' }}>
@@ -215,7 +217,11 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
               className="text-[11px] font-bold uppercase tracking-[0.22em]"
               style={{ color: 'rgba(242,237,222,0.85)', fontFamily: 'var(--font-mono), monospace' }}
             >
-              {[cityBadge, club.sports.map((s) => (s === 'PADEL' ? 'Padel' : 'Tenis')).join(' · ')]
+              {[
+                heroCountry ? `${heroCountry.flag} ${heroCountry.name}` : null,
+                cityBadge,
+                club.sports.map((s) => (s === 'PADEL' ? 'Padel' : 'Tenis')).join(' · '),
+              ]
                 .filter(Boolean)
                 .join(' · ')}
             </p>
