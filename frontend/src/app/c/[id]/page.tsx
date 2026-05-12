@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import OpenStatusBadge from './OpenStatusBadge';
 import CopyAddressButton from './CopyAddressButton';
+import CourtReserveAction from './CourtReserveAction';
 import { findCountryByName } from '@/lib/countries';
 import {
   PublicTopBar,
@@ -637,6 +638,7 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                       ${Number(c.pricePerBlock).toLocaleString('es-AR')}
                     </p>
                   </div>
+                  <CourtReserveAction clubId={club.id} courtId={c.id} />
                 </div>
               ))}
             </div>
