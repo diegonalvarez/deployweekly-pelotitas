@@ -367,31 +367,6 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
           </div>
         </section>
 
-        {/* Gallery — featured + grid */}
-        {club.galleryUrls.length > 0 && (
-          <Section eyebrow="Galería" title="El complejo en imágenes">
-            <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={club.galleryUrls[0]}
-                alt={`${club.name} foto destacada`}
-                className="w-full h-full object-cover"
-                style={{ borderRadius: 28, background: 'var(--v5-paper-2)', gridRow: 'span 2', minHeight: 320, aspectRatio: '4 / 5' }}
-              />
-              {club.galleryUrls.slice(1, 5).map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={`${url}-${i}`}
-                  src={url}
-                  alt={`${club.name} foto ${i + 2}`}
-                  className="w-full aspect-[4/3] object-cover"
-                  style={{ borderRadius: 22, background: 'var(--v5-paper-2)' }}
-                />
-              ))}
-            </div>
-          </Section>
-        )}
-
         {/* Video */}
         {club.videoUrl && (
           <Section eyebrow="Video" title="Conocé el lugar">
@@ -681,6 +656,31 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                     </span>
                   </p>
                 </Link>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Gallery — featured + grid */}
+        {club.galleryUrls.length > 0 && (
+          <Section eyebrow="Galería" title="El complejo en imágenes">
+            <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={club.galleryUrls[0]}
+                alt={`${club.name} foto destacada`}
+                className="w-full h-full object-cover"
+                style={{ borderRadius: 28, background: 'var(--v5-paper-2)', gridRow: 'span 2', minHeight: 320, aspectRatio: '4 / 5' }}
+              />
+              {club.galleryUrls.slice(1, 5).map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={`${url}-${i}`}
+                  src={url}
+                  alt={`${club.name} foto ${i + 2}`}
+                  className="w-full aspect-[4/3] object-cover"
+                  style={{ borderRadius: 22, background: 'var(--v5-paper-2)' }}
+                />
               ))}
             </div>
           </Section>
