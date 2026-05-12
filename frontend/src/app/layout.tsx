@@ -70,7 +70,7 @@ export default function RootLayout({
         {/* Inline theme bootstrap to avoid flash of wrong theme */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=sessionStorage.getItem('v5-theme');var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var d=t==='dark'||(!t&&m);if(d)document.documentElement.classList.add('v5-dark');}catch(e){}})();`,
+            __html: `(function(){try{var t=sessionStorage.getItem('v5-theme');if(t==='dark')document.documentElement.classList.add('v5-dark');}catch(e){}})();`,
           }}
         />
         {/* iOS — Add to Home Screen experience */}
