@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import OpenStatusBadge from './OpenStatusBadge';
+import CopyAddressButton from './CopyAddressButton';
 
 const API = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3099';
 
@@ -115,6 +116,14 @@ function whatsappHref(phone: string): string {
 
 function mapsHref(lat: number, lng: number): string {
   return `https://maps.google.com/?q=${lat},${lng}`;
+}
+
+function wazeHref(lat: number, lng: number): string {
+  return `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+}
+
+function fullAddress(loc: { address?: string | null; city?: string | null; state?: string | null; country?: string | null }): string {
+  return [loc.address, loc.city, loc.state, loc.country].filter(Boolean).join(', ');
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -416,23 +425,43 @@ export default async function PublicClubLanding({ params }: { params: { id: stri
                       {[loc.city, loc.state, loc.country].filter(Boolean).join(', ')}
                     </p>
                   </div>
-                  {loc.latitude != null && loc.longitude != null && (
-                    <a
-                      href={mapsHref(loc.latitude, loc.longitude)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
-                      style={{ background: 'var(--v5-ink)', color: 'var(--v5-cream)' }}
-                    >
-                      Abrir en Maps
-                      <span
-                        className="inline-flex items-center justify-center w-7 h-7 rounded-full"
-                        style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
-                      >
-                        →
-                      </span>
-                    </a>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CopyAddressButton address={fullAddress(loc)} />
+                    {loc.latitude != null && loc.longitude != null && (
+                      <>
+                        <a
+                          href={mapsHref(loc.latitude, loc.longitude)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
+                          style={{ background: 'var(--v5-ink)', color: 'var(--v5-cream)' }}
+                        >
+                          Maps
+                          <span
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full"
+                            style={{ background: 'var(--v5-orange)', color: 'var(--v5-ink)' }}
+                          >
+                            →
+                          </span>
+                        </a>
+                        <a
+                          href={wazeHref(loc.latitude, loc.longitude)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 pl-4 pr-1 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
+                          style={{ background: '#33CCFF', color: '#FFFFFF' }}
+                        >
+                          Waze
+                          <span
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full"
+                            style={{ background: '#FFFFFF', color: '#33CCFF' }}
+                          >
+                            →
+                          </span>
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
