@@ -863,7 +863,7 @@ function ClosingCTA() {
                   <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </span>
               </Link>
-              <Link href="/clubs" className="inline-flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: CREAM, borderBottom: `2px solid ${CREAM}` }}>
+              <Link href="/c" className="inline-flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: CREAM, borderBottom: `2px solid ${CREAM}` }}>
                 VER COMPLEJOS <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>

@@ -35,7 +35,7 @@ const NAKED_PREFIXES = [
 ];
 
 /* Exact-match naked routes — / itself is the new v5 landing. */
-const NAKED_EXACT = ['/'];
+const NAKED_EXACT = ['/', '/c'];
 
 function isMarketing(pathname: string): boolean {
   if (MARKETING_PATHS.includes(pathname)) return true;
