@@ -49,8 +49,9 @@ export class ClubsController {
   @Get('mine')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  getMyClubs(@CurrentUser('id') userId: string) {
-    return this.clubsService.getMyClubs(userId);
+  getMyClubs(@CurrentUser() user: any) {
+    const isAdmin = user.roles?.includes('ADMIN');
+    return this.clubsService.getMyClubs(user.id, isAdmin);
   }
 
   @Get('map')
@@ -76,10 +77,11 @@ export class ClubsController {
   @ApiBearerAuth()
   update(
     @Param('id') id: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
     @Body() dto: UpdateClubDto,
   ) {
-    return this.clubsService.update(id, userId, dto);
+    const isAdmin = user.roles?.includes('ADMIN');
+    return this.clubsService.update(id, user.id, dto, isAdmin);
   }
 
   @Post(':id/locations')
@@ -87,10 +89,11 @@ export class ClubsController {
   @ApiBearerAuth()
   addLocation(
     @Param('id') clubId: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
     @Body() dto: CreateLocationDto,
   ) {
-    return this.clubsService.addLocation(clubId, userId, dto);
+    const isAdmin = user.roles?.includes('ADMIN');
+    return this.clubsService.addLocation(clubId, user.id, dto, isAdmin);
   }
 
   @Patch(':id/approve')

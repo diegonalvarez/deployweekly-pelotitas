@@ -96,6 +96,11 @@ export default function ClubDetailPage() {
       return;
     }
     let cancelled = false;
+    const isAdmin = (user as any).roles?.includes('ADMIN');
+    if (isAdmin) {
+      router.replace(`/dashboard/club/${id}`);
+      return;
+    }
     api
       .get<any[]>('/clubs/mine')
       .then((mine) => {

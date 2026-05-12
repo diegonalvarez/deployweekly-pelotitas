@@ -212,10 +212,10 @@ export class ClubsService {
     return club;
   }
 
-  async update(clubId: string, userId: string, dto: UpdateClubDto) {
+  async update(clubId: string, userId: string, dto: UpdateClubDto, isAdmin = false) {
     const club = await this.prisma.clubProfile.findUnique({ where: { id: clubId } });
     if (!club) throw new NotFoundException('Club not found');
-    if (club.ownerId !== userId) throw new ForbiddenException('Not the owner');
+    if (!isAdmin && club.ownerId !== userId) throw new ForbiddenException('Not the owner');
 
     return this.prisma.clubProfile.update({
       where: { id: clubId },
@@ -223,23 +223,24 @@ export class ClubsService {
     });
   }
 
-  async addLocation(clubId: string, userId: string, dto: CreateLocationDto) {
+  async addLocation(clubId: string, userId: string, dto: CreateLocationDto, isAdmin = false) {
     const club = await this.prisma.clubProfile.findUnique({ where: { id: clubId } });
     if (!club) throw new NotFoundException('Club not found');
-    if (club.ownerId !== userId) throw new ForbiddenException('Not the owner');
+    if (!isAdmin && club.ownerId !== userId) throw new ForbiddenException('Not the owner');
 
     return this.prisma.clubLocation.create({
       data: { clubId, ...dto },
     });
   }
 
-  async getMyClubs(userId: string) {
+  async getMyClubs(userId: string, isAdmin = false) {
     return this.prisma.clubProfile.findMany({
-      where: { ownerId: userId, deletedAt: null },
+      where: isAdmin ? { deletedAt: null } : { ownerId: userId, deletedAt: null },
       include: {
         locations: true,
         _count: { select: { courts: true, tournaments: true } },
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
