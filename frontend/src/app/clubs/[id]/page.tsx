@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { api } from '@/lib/api';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { formatDate, formatDateLong } from '@/lib/date';
@@ -77,6 +77,8 @@ function generateWeekDays(startDate: Date, count: number) {
 
 export default function ClubDetailPage() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const focusCourtId = searchParams?.get('court') ?? null;
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [club, setClub] = useState<any>(null);
@@ -238,6 +240,15 @@ export default function ClubDetailPage() {
       setAvailabilityLoading(false);
     });
   }, [courts, selectedDay]);
+
+  // Scroll the targeted court row into view when /clubs/[id]?court=X loads.
+  useEffect(() => {
+    if (!focusCourtId || availabilityLoading || courtAvailability.length === 0) return;
+    const el = document.getElementById(`court-${focusCourtId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusCourtId, availabilityLoading, courtAvailability.length]);
 
   // Fetch availability slots when date or court changes (for the reservation modal)
   useEffect(() => {
@@ -718,10 +729,14 @@ export default function ClubDetailPage() {
               <div className="space-y-3" ref={slotsContainerRef}>
                 {courtAvailability.map(ca => {
                   const court = courts.find(c => c.id === ca.courtId);
+                  const isFocused = focusCourtId === ca.courtId;
                   return (
                     <div
                       key={ca.courtId}
-                      className="bg-surface rounded-2xl border border-border-dark overflow-hidden"
+                      id={`court-${ca.courtId}`}
+                      className={`bg-surface rounded-2xl border overflow-hidden transition-all ${
+                        isFocused ? 'border-brand ring-2 ring-brand/40' : 'border-border-dark'
+                      }`}
                     >
                       {/* Court row header */}
                       <div className="flex items-center gap-3 px-4 py-3 border-b border-border-dark bg-surface-light/30">

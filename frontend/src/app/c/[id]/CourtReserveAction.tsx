@@ -58,7 +58,8 @@ export default function CourtReserveAction({
   }, [courtId]);
 
   const isLoggedIn = !authLoading && !!user;
-  const href = isLoggedIn ? `/clubs/${clubId}` : `/register?next=/clubs/${clubId}`;
+  const target = `/clubs/${clubId}?court=${courtId}`;
+  const href = isLoggedIn ? target : `/register?next=${encodeURIComponent(target)}`;
   const label = isLoggedIn ? 'Reservar' : 'Registrate y reservá';
 
   return (

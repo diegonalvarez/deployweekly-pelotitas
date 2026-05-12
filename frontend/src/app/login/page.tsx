@@ -3,12 +3,21 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+
+/** Only allow same-origin paths in the ?next= param to avoid open-redirect. */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+  return raw;
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams?.get('next') ?? null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +28,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       toast.success('Bienvenido!');
-      router.push('/dashboard/player');
+      router.push(next ?? '/dashboard/player');
     } catch (err: any) {
       toast.error(err.message || 'Error al iniciar sesion');
     } finally {

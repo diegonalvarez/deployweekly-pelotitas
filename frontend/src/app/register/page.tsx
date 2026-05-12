@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+
+/** Only allow same-origin paths in the ?next= param to avoid open-redirect. */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+  return raw;
+}
 import { COUNTRIES, STATES_BY_COUNTRY, useLocation, isValidE164 } from '@/lib/location';
 import PhoneInput from '@/components/PhoneInput';
 import {
@@ -20,6 +27,8 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const setManualLocation = useLocation().setManual;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams?.get('next') ?? null);
 
   const [form, setForm] = useState({
     email: '',
@@ -91,8 +100,16 @@ export default function RegisterPage() {
         });
       }
 
-      toast.success('Cuenta creada. Ahora activá tu perfil.');
-      router.push('/activate');
+      // If the caller wanted to go somewhere specific (eg /clubs/X?court=Y),
+      // jump there directly so the user doesn't lose context. Profile
+      // activation can happen later from any RoleGuard.
+      if (next) {
+        toast.success('Cuenta creada. Vamos a tu reserva.');
+        router.push(next);
+      } else {
+        toast.success('Cuenta creada. Ahora activá tu perfil.');
+        router.push('/activate');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Error al registrarse');
     } finally {
