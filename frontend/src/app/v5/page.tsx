@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Play, ChevronLeft, ChevronRight, Plus, Menu } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 /* Real photos via Unsplash — fall back to a colored block on error.
    Each url includes auto-format/quality/sizing params. */
@@ -87,19 +88,67 @@ function NavBar() {
         <Link href="/tournaments" className="hover:opacity-60 transition-opacity">Torneos</Link>
         <Link href="/ranking" className="hover:opacity-60 transition-opacity">Ranking</Link>
       </nav>
-      <div className="flex items-center gap-2">
+      <NavRightActions />
+    </header>
+  );
+}
+
+function NavRightActions() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    // Hold space so navbar doesn't jump on hydration.
+    return <div style={{ width: 160, height: 44 }} />;
+  }
+
+  if (user) {
+    const isAdmin = user.roles?.includes('ADMIN');
+    const isClubOwner = user.roles?.includes('CLUB_OWNER');
+    const dashboardHref = isAdmin || isClubOwner ? '/dashboard/club' : '/dashboard/player';
+    return (
+      <div className="flex items-center gap-3">
+        <span
+          className="hidden sm:inline text-[12px] font-bold uppercase tracking-[0.1em]"
+          style={{ color: INK, opacity: 0.7 }}
+        >
+          Hola, {user.firstName}
+        </span>
         <Link
-          href="/register"
+          href={dashboardHref}
           className="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] pl-5 pr-1.5 py-1.5 rounded-full transition-all hover:bg-black/[0.03]"
           style={{ color: INK, border: `1.5px solid ${ORANGE}` }}
         >
-          CREAR CUENTA
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-full" style={{ background: ORANGE, color: INK }}>
+          MI PANEL
+          <span
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full"
+            style={{ background: ORANGE, color: INK }}
+          >
             <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
           </span>
         </Link>
       </div>
-    </header>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 sm:gap-4">
+      <Link
+        href="/login"
+        className="hidden sm:inline text-[12px] font-bold uppercase tracking-[0.1em] transition-opacity hover:opacity-60"
+        style={{ color: INK }}
+      >
+        Iniciar sesión
+      </Link>
+      <Link
+        href="/register"
+        className="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] pl-5 pr-1.5 py-1.5 rounded-full transition-all hover:bg-black/[0.03]"
+        style={{ color: INK, border: `1.5px solid ${ORANGE}` }}
+      >
+        CREAR CUENTA
+        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full" style={{ background: ORANGE, color: INK }}>
+          <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
+        </span>
+      </Link>
+    </div>
   );
 }
 
