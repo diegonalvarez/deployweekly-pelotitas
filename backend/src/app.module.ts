@@ -23,8 +23,10 @@ import { EloModule } from './elo/elo.module';
 import { PushModule } from './push/push.module';
 import { ClipsModule } from './clips/clips.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { HealthController } from './health.controller';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{

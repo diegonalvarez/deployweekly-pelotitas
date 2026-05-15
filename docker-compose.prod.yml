@@ -1,0 +1,44 @@
+# Production compose — no source mounts, no local postgres (uses RDS),
+# images are built from the *.prod Dockerfiles. Reads .env.production
+# from the project root (same dir as this file).
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: pelotitas-api
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      BACKEND_PORT: ${BACKEND_PORT:-3099}
+      NODE_ENV: production
+    ports:
+      - '${BACKEND_PORT:-3099}:3099'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:3099/api/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        # NEXT_PUBLIC_* values are inlined at build time. Re-build the
+        # frontend image when this URL changes.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: pelotitas-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # INTERNAL_API_URL is consumed by server components for SSR fetches
+      # inside the docker network. The browser still uses NEXT_PUBLIC_API_URL.
+      INTERNAL_API_URL: http://backend:${BACKEND_PORT:-3099}
+    ports:
+      - '${FRONTEND_PORT:-3098}:3098'
+    depends_on:
+      - backend
