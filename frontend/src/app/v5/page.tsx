@@ -83,10 +83,10 @@ function NavBar() {
       <nav className="hidden md:flex items-center gap-7 text-[13px] font-semibold uppercase tracking-[0.04em]"
            style={{ color: INK }}>
         <Link href="/" className="hover:opacity-60 transition-opacity">Inicio</Link>
+        <Link href="/c" className="hover:opacity-60 transition-opacity">Complejos</Link>
         <Link href="/scoreboards" className="hover:opacity-60 transition-opacity">Anotador</Link>
         <Link href="/reservations" className="hover:opacity-60 transition-opacity">Reservas</Link>
         <Link href="/tournaments" className="hover:opacity-60 transition-opacity">Torneos</Link>
-        <Link href="/ranking" className="hover:opacity-60 transition-opacity">Ranking</Link>
       </nav>
       <NavRightActions />
     </header>
