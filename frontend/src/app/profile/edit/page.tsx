@@ -35,7 +35,7 @@ export default function EditProfilePage() {
   }
 
   if (!user) {
-    if (typeof window !== 'undefined') router.push('/login');
+    if (typeof window !== 'undefined') router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     return <FullPageSpinner />;
   }
 

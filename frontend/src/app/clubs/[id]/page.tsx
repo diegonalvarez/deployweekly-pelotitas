@@ -416,7 +416,7 @@ export default function ClubDetailPage() {
 
     if (!user) {
       toast('Inicia sesion para reservar', { icon: '🔒' });
-      router.push('/login');
+      router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
 

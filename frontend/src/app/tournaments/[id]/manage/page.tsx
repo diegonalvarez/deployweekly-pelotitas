@@ -1365,7 +1365,7 @@ function ManageTournamentContent() {
   }, [id]);
 
   useEffect(() => {
-    if (!authLoading && !user) { router.push('/login'); return; }
+    if (!authLoading && !user) { router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`); return; }
     if (user && id) fetchTournament();
   }, [user, authLoading, id, fetchTournament, router]);
 

@@ -38,6 +38,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Back link */}
+      <Link
+        href={next ?? '/'}
+        className="absolute top-5 left-5 z-20 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-text-muted hover:text-text-primary transition-colors"
+      >
+        ← Volver
+      </Link>
       {/* Animated background elements */}
       <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
       <div className="absolute top-20 left-[10%] w-72 h-72 bg-brand/5 rounded-full blur-3xl animate-float" />

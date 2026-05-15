@@ -637,7 +637,7 @@ export default function CourtsPage() {
 
   // Auth guard
   useEffect(() => {
-    if (!authLoading && !user) router.push('/login');
+    if (!authLoading && !user) router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   }, [user, authLoading, router]);
 
   // Fetch club & courts

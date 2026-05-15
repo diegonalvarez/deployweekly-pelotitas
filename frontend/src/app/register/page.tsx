@@ -119,6 +119,13 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 relative overflow-hidden">
+      {/* Back link */}
+      <Link
+        href={next ?? '/'}
+        className="absolute top-5 left-5 z-20 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-text-muted hover:text-text-primary transition-colors"
+      >
+        ← Volver
+      </Link>
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
       <div className="absolute inset-0 bg-court-grid opacity-40 pointer-events-none" />

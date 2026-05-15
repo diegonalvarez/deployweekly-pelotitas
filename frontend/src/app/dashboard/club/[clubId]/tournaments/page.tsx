@@ -80,7 +80,7 @@ export default function ClubTournamentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push('/login');
+    if (!authLoading && !user) router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   }, [user, authLoading, router]);
 
   const fetchData = useCallback(async () => {
