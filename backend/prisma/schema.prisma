@@ -1560,3 +1560,41 @@ model MatchLogParticipant {
   @@index([firstName, lastName])
   @@map("match_log_participants")
 }
+
+// ─── Brochure leads (commercial pipeline) ────────────────────────────
+// Captured from brochure.pelotitas.com — visitors leave email/phone +
+// optional comment. The commercial team works the list and updates
+// status as they reach out.
+
+enum BrochureLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  DEAD
+}
+
+model BrochureLead {
+  id          String              @id @default(cuid())
+  email       String
+  phone       String?             // E.164 preferred but free-form accepted
+  fullName    String?
+  clubName    String?             // optional — "I run X club" hint
+  comment     String?             @db.Text
+  // Provenance — useful for the commercial team
+  source      String?             // 'brochure' | 'whatsapp-link' | …
+  referrer    String?             // raw Referer header value
+  userAgent   String?
+  ipAddress   String?
+  // Pipeline
+  status      BrochureLeadStatus  @default(NEW)
+  contactedAt DateTime?
+  contactedById String?
+  notes       String?             @db.Text
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@map("brochure_leads")
+}

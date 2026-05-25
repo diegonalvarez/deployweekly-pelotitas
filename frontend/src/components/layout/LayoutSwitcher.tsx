@@ -26,12 +26,13 @@ const MARKETING_PREFIXES = [
 
 /* Naked = no chrome at all (public share pages, OG-only routes). */
 const NAKED_PREFIXES = [
-  '/m/',      // shareable match card
-  '/h2h/',    // public head-to-head
-  '/u/',      // public player profile
-  '/c/',      // public club landing
-  '/v1',      // legacy landing kept as a reference (optional)
-  '/v5',      // source of the live landing — re-exported by /
+  '/m/',         // shareable match card
+  '/h2h/',       // public head-to-head
+  '/u/',         // public player profile
+  '/c/',         // public club landing
+  '/brochure',   // commercial-team brochure (sub-routes covered too)
+  '/v1',         // legacy landing kept as a reference (optional)
+  '/v5',         // source of the live landing — re-exported by /
 ];
 
 /* Exact-match naked routes — / itself is the new v5 landing. */

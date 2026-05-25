@@ -23,6 +23,7 @@ import { EloModule } from './elo/elo.module';
 import { PushModule } from './push/push.module';
 import { ClipsModule } from './clips/clips.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { LeadsModule } from './leads/leads.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -54,6 +55,7 @@ import { HealthController } from './health.controller';
     PushModule,
     ClipsModule,
     TimelineModule,
+    LeadsModule,
   ],
   providers: [
     {
